@@ -1,0 +1,6 @@
+{
+  "name": "Developer Productivity Dashboard",
+  "description": "Futuristic developer productivity dashboard with real-time device hardware telemetry & focus analyzer, live GitHub repository fetcher & commits matrix, cloud integrations (Vercel, Render, Cloudflare), GenZ meme avatar customizer, interactive Jira board, and pixelated gaming doodles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
