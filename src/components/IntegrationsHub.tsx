@@ -29,7 +29,21 @@ import {
   ToggleLeft,
   ToggleRight,
   Network,
-  Send
+  Send,
+  Lock,
+  Eye,
+  EyeOff,
+  Cpu,
+  Key,
+  Terminal,
+  Activity,
+  Code2,
+  GitPullRequest,
+  CheckCircle,
+  Copy,
+  Clock,
+  Settings,
+  Sparkles
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -66,23 +80,38 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
   const [isPinging, setIsPinging] = useState<string | null>(null);
   const [simulatedDeployLog, setSimulatedDeployLog] = useState<string | null>(null);
   const [pingLatencies, setPingLatencies] = useState<Record<string, number>>({});
+  const [copiedText, setCopiedText] = useState<string | null>(null);
   
+  // Pipeline switcher tabs: Vercel, Render, Cloudflare, Supabase, GitHub, Matrix
+  const [activePipelineTab, setActivePipelineTab] = useState<'vercel' | 'render' | 'cloudflare' | 'supabase' | 'github' | 'matrix'>('vercel');
+
   // Cloudflare WebSocket Toggle & Test State
   const [cloudflareWsEnabled, setCloudflareWsEnabled] = useState(true);
   const [wsTestStatus, setWsTestStatus] = useState<'idle' | 'testing' | 'connected' | 'error'>('idle');
   const [wsLatency, setWsLatency] = useState<number | null>(null);
-  const [wsFramesLog, setWsFramesLog] = useState<Array<{ direction: 'TX' | 'RX'; text: string; time: string }>>([]);
+  const [wsFramesLog, setWsFramesLog] = useState<Array<{ direction: 'TX' | 'RX'; text: string; time: string }>>([
+    { direction: 'RX', text: `WS Proxy Gateway ready for ${cleanUser}.dev / TLS 1.3`, time: '10:00:00' }
+  ]);
   
-  // Pipeline switcher tabs: Vercel, Render, Cloudflare, Supabase, GitHub
-  const [activePipelineTab, setActivePipelineTab] = useState<'vercel' | 'render' | 'cloudflare' | 'supabase' | 'github'>('vercel');
-
   // Supabase CDC Broadcast Simulator state
   const [supabaseBroadcastStatus, setSupabaseBroadcastStatus] = useState<'idle' | 'broadcasting' | 'received'>('idle');
-  const [supabaseBroadcastCount, setSupabaseBroadcastCount] = useState(48);
+  const [supabaseBroadcastCount, setSupabaseBroadcastCount] = useState(64);
+  const [cdcLogs, setCdcLogs] = useState<Array<{ table: string; event: string; record: string; timestamp: string }>>([
+    { table: 'commits', event: 'INSERT', record: `{"sha":"${realCommits[0]?.sha?.substring(0, 7) || 'a1b2c3d'}","author":"${cleanUser}"}`, timestamp: '10:02:14' },
+    { table: 'deployments', event: 'UPDATE', record: `{"status":"LIVE","service":"vercel-edge","env":"production"}`, timestamp: '10:05:30' }
+  ]);
 
   // Webhook Delivery Test state
   const [webhookTestStatus, setWebhookTestStatus] = useState<'idle' | 'testing' | 'success'>('idle');
   const [webhookDeliveryLatency, setWebhookDeliveryLatency] = useState<number | null>(null);
+  const [webhookEventsList, setWebhookEventsList] = useState<Array<{ event: string; repo: string; id: string; status: number; time: string }>>([
+    { event: 'push', repo: realRepos[0]?.name || 'web-app', id: 'del_9281a', status: 200, time: 'Just now' },
+    { event: 'pull_request', repo: realRepos[1]?.name || 'api-server', id: 'del_8412c', status: 200, time: '4m ago' },
+    { event: 'workflow_run', repo: realRepos[0]?.name || 'web-app', id: 'del_7190d', status: 200, time: '12m ago' }
+  ]);
+
+  // Individual repo deployment statuses for the deployment matrix
+  const [repoDeployStates, setRepoDeployStates] = useState<Record<string, { status: 'idle' | 'deploying' | 'live'; timestamp: string }>>({});
 
   // Sync username input if cleanUser changes externally
   useEffect(() => {
@@ -102,7 +131,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         lang.includes('html') ||
         lang.includes('css') ||
         topics.some((t) =>
-          ['react', 'nextjs', 'vue', 'tailwind', 'ui', 'frontend', 'portfolio', 'vite', 'svelte', 'design-system', 'template'].includes(t)
+          ['react', 'nextjs', 'vue', 'tailwind', 'ui', 'frontend', 'portfolio', 'vite', 'svelte', 'design-system', 'template', 'web'].includes(t)
         ) ||
         name.includes('ui') ||
         name.includes('web') ||
@@ -127,7 +156,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         lang.includes('c++') ||
         lang.includes('shell') ||
         topics.some((t) =>
-          ['api', 'backend', 'websocket', 'socket-io', 'server', 'docker', 'fastapi', 'microservice', 'express', 'trpc', 'prisma', 'queue'].includes(t)
+          ['api', 'backend', 'websocket', 'socket-io', 'server', 'docker', 'fastapi', 'microservice', 'express', 'trpc', 'prisma', 'queue', 'redis'].includes(t)
         ) ||
         name.includes('api') ||
         name.includes('server') ||
@@ -146,7 +175,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
       const name = r.name.toLowerCase();
       return (
         topics.some((t) =>
-          ['prisma', 'postgres', 'postgresql', 'database', 'sql', 'trpc', 'supabase', 'redis', 'graphql', 'auth'].includes(t)
+          ['prisma', 'postgres', 'postgresql', 'database', 'sql', 'trpc', 'supabase', 'redis', 'graphql', 'auth', 'schema'].includes(t)
         ) ||
         name.includes('data') ||
         name.includes('db') ||
@@ -200,7 +229,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         category: 'Code & VCS',
         status: 'connected',
         accountOrProject: `github.com/${cleanUser} (${totalRepos} repos)`,
-        latencyMs: pingLatencies['github'] ?? 14,
+        latencyMs: pingLatencies['github'] ?? 12,
         lastSync: realCommits.length > 0 ? `Commit ${realCommits[0].sha.substring(0, 7)} Synced` : 'Webhooks Active',
         activeDeployments: totalRepos,
         color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10',
@@ -212,7 +241,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         category: 'Hosting & Edge',
         status: 'connected',
         accountOrProject: topFrontend ? `${topFrontend.name}-${cleanUser}.vercel.app` : `${cleanUser}.vercel.app`,
-        latencyMs: pingLatencies['vercel'] ?? 11,
+        latencyMs: pingLatencies['vercel'] ?? 9,
         lastSync: topFrontend ? `Updated ${new Date(topFrontend.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Live',
         activeDeployments: frontendRepos.length,
         color: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
@@ -224,7 +253,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         category: 'Compute & Database',
         status: 'connected',
         accountOrProject: topBackend ? `${topBackend.name}-api.onrender.com` : `${cleanUser}-api.onrender.com`,
-        latencyMs: pingLatencies['render'] ?? 24,
+        latencyMs: pingLatencies['render'] ?? 21,
         lastSync: 'Persistent WS Runner Active',
         activeDeployments: backendRepos.length,
         color: 'text-purple-400 border-purple-500/30 bg-purple-500/10',
@@ -236,7 +265,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         category: 'CDN & DNS',
         status: 'connected',
         accountOrProject: `${cleanUser}.dev / api.${cleanUser}.dev`,
-        latencyMs: pingLatencies['cloudflare'] ?? 7,
+        latencyMs: pingLatencies['cloudflare'] ?? 6,
         lastSync: cloudflareWsEnabled ? 'WS Proxy 100% Pass' : 'WS Proxy Disabled',
         activeDeployments: totalRepos * 2,
         color: 'text-amber-400 border-amber-500/30 bg-amber-500/10',
@@ -248,7 +277,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         category: 'Compute & Database',
         status: 'connected',
         accountOrProject: `db.${cleanUser}.supabase.co`,
-        latencyMs: pingLatencies['supabase'] ?? 19,
+        latencyMs: pingLatencies['supabase'] ?? 16,
         lastSync: 'Postgres CDC Live Stream',
         activeDeployments: Math.max(1, databaseRepos.length),
         color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10',
@@ -287,23 +316,33 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
     setIsPinging(integrationId);
     soundFx.playClick(600, 0.04);
     setTimeout(() => {
-      const simulatedLatency = Math.floor(Math.random() * 14) + 6;
+      const simulatedLatency = Math.floor(Math.random() * 12) + 5;
       setPingLatencies((prev) => ({ ...prev, [integrationId]: simulatedLatency }));
       setIsPinging(null);
       soundFx.playSuccess();
-    }, 500);
+    }, 400);
   };
 
   // Trigger Real-Time Deploy Simulation for user's repository
   const handleSimulateDeploy = (integrationName: string, repoName?: string) => {
     const targetRepo = repoName || selectedVercelRepo?.name || selectedRenderRepo?.name || 'app';
     soundFx.playRetroPowerUp();
-    setSimulatedDeployLog(`[DEPLOY CANARY] Triggering pipeline on ${integrationName} for @${cleanUser}/${targetRepo}... Compiling edge artifacts from branch ${selectedVercelRepo?.default_branch || 'main'}...`);
+    setSimulatedDeployLog(`[DEPLOY PIPELINE] Triggering ${integrationName} for @${cleanUser}/${targetRepo}... Pulling commit ${realCommits[0]?.sha?.substring(0, 7) || 'HEAD'} on ${selectedVercelRepo?.default_branch || 'main'}...`);
     
+    // update matrix state
+    setRepoDeployStates((prev) => ({
+      ...prev,
+      [targetRepo]: { status: 'deploying', timestamp: 'Just now' }
+    }));
+
     setTimeout(() => {
-      setSimulatedDeployLog(`[DEPLOY CANARY] ✅ ${integrationName} deployment succeeded for ${cleanUser}/${targetRepo} (Build time: 1.2s, 0 errors, 100% health, Cold start: 180ms).`);
-      confetti({ particleCount: 35, spread: 50 });
-    }, 1500);
+      setSimulatedDeployLog(`[DEPLOY PIPELINE] ✅ ${integrationName} deploy complete for ${cleanUser}/${targetRepo} (Build: 1.1s, 0 errors, 100% health, CDN cache primed).`);
+      setRepoDeployStates((prev) => ({
+        ...prev,
+        [targetRepo]: { status: 'live', timestamp: 'Just now' }
+      }));
+      confetti({ particleCount: 40, spread: 55 });
+    }, 1400);
   };
 
   // Test WebSocket Handshake through Cloudflare / Render for the user's backend repo
@@ -315,10 +354,10 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
     const repoName = selectedRenderRepo?.name || 'backend-api';
     
     setWsFramesLog((prev) => [
-      ...prev.slice(-6),
+      ...prev.slice(-8),
       {
         direction: 'TX',
-        text: `CONNECT wss://${repoName}-api.onrender.com/ws?user=@${cleanUser}&app=devpulse`,
+        text: `CONNECT wss://${repoName}-api.onrender.com/ws?user=@${cleanUser}&origin=${cleanUser}.dev`,
         time: now,
       },
     ]);
@@ -328,34 +367,34 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         setWsTestStatus('error');
         setWsLatency(null);
         setWsFramesLog((prev) => [
-          ...prev.slice(-6),
+          ...prev.slice(-8),
           {
             direction: 'RX',
-            text: `HTTP 403 Forbidden: Cloudflare WebSockets proxy toggle is OFF. Full-duplex frames dropped.`,
+            text: `HTTP 403 Forbidden: Cloudflare WebSockets proxy toggle is OFF. Frames dropped by edge firewall.`,
             time: new Date().toLocaleTimeString(),
           },
         ]);
       } else {
-        const simulatedWsLatency = Math.floor(Math.random() * 12) + 8;
+        const simulatedWsLatency = Math.floor(Math.random() * 10) + 6;
         setWsLatency(simulatedWsLatency);
         setWsTestStatus('connected');
         soundFx.playSuccess();
 
         setWsFramesLog((prev) => [
-          ...prev.slice(-6),
+          ...prev.slice(-8),
           {
             direction: 'RX',
-            text: `101 Switching Protocols | TLS 1.3 | Cipher: ChaCha20-Poly1305 | RTT: ${simulatedWsLatency}ms | Ready`,
+            text: `101 Switching Protocols | TLS 1.3 | Cipher: ChaCha20-Poly1305 | RTT: ${simulatedWsLatency}ms`,
             time: new Date().toLocaleTimeString(),
           },
           {
             direction: 'RX',
-            text: `ACK FRAME: { user: "@${cleanUser}", repo: "${repoName}", streams: ["commits", "telemetry"], status: "LIVE" }`,
+            text: `ACK STREAM: { user: "@${cleanUser}", repo: "${repoName}", channel: "telemetry", status: "LIVE_CONNECTED" }`,
             time: new Date().toLocaleTimeString(),
           },
         ]);
       }
-    }, 700);
+    }, 600);
   };
 
   // Trigger Supabase Realtime CDC Broadcast
@@ -363,12 +402,24 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
     setSupabaseBroadcastStatus('broadcasting');
     soundFx.playClick(700, 0.04);
 
+    const now = new Date().toLocaleTimeString();
+    const newRecordSha = Math.random().toString(36).substring(2, 9);
+    
     setTimeout(() => {
       setSupabaseBroadcastStatus('received');
       setSupabaseBroadcastCount((c) => c + 1);
+      setCdcLogs((prev) => [
+        {
+          table: 'commits',
+          event: 'INSERT',
+          record: `{"sha":"${newRecordSha}","author":"${cleanUser}","repo":"${selectedSupabaseRepo?.name || 'app'}","delta":"+48 -12"}`,
+          timestamp: now
+        },
+        ...prev.slice(0, 5)
+      ]);
       soundFx.playSuccess();
-      setTimeout(() => setSupabaseBroadcastStatus('idle'), 2500);
-    }, 600);
+      setTimeout(() => setSupabaseBroadcastStatus('idle'), 2200);
+    }, 500);
   };
 
   // Trigger GitHub Webhook Delivery Test
@@ -377,12 +428,29 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
     soundFx.playClick(800, 0.04);
 
     setTimeout(() => {
-      const lat = Math.floor(Math.random() * 10) + 12;
+      const lat = Math.floor(Math.random() * 8) + 10;
       setWebhookDeliveryLatency(lat);
       setWebhookTestStatus('success');
+      setWebhookEventsList((prev) => [
+        {
+          event: 'push',
+          repo: selectedVercelRepo?.name || 'project',
+          id: `del_${Math.random().toString(36).substring(2, 7)}`,
+          status: 200,
+          time: 'Just now'
+        },
+        ...prev.slice(0, 4)
+      ]);
       soundFx.playSuccess();
-      setTimeout(() => setWebhookTestStatus('idle'), 3500);
-    }, 650);
+      setTimeout(() => setWebhookTestStatus('idle'), 3000);
+    }, 550);
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(text);
+    soundFx.playClick(900, 0.02);
+    setTimeout(() => setCopiedText(null), 2000);
   };
 
   const languageStats = calculateLanguageStats(realRepos);
@@ -403,58 +471,76 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
   return (
     <div className="space-y-6">
       
-      {/* 1. Real-time Multi-Cloud Connector & GitHub Sync Banner */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-4 shadow-xl">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-              <Layers className="w-6 h-6" />
+      {/* 1. Profile Header & Real-Time Sync Bar */}
+      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-4 shadow-xl">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-4 border-b border-white/5">
+          <div className="flex items-center gap-3.5">
+            <div className="relative">
+              <img
+                src={currentUser.avatar || `https://github.com/${cleanUser}.png`}
+                alt={cleanUser}
+                className="w-13 h-13 rounded-2xl border-2 border-cyan-500/40 object-cover shadow-md shadow-cyan-500/10"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`;
+                }}
+              />
+              <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-950 flex items-center justify-center">
+                <Check className="w-2.5 h-2.5 text-white" />
+              </span>
             </div>
+            
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm font-bold text-white uppercase tracking-widest font-mono">
-                  Live Cloud & Git Infrastructure Hub
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                  <span>Cloud & Git Operations Deck</span>
+                  <span className="text-cyan-400 font-bold">@{cleanUser}</span>
                 </h3>
-                <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                  CONNECTED: @{cleanUser}
+                <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  VCS CONNECTED
                 </span>
                 <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  {realRepos.length} REPOSITORIES
+                  {realRepos.length} LIVE REPOS
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-mono mt-0.5">
-                All cloud pipelines, webhooks, edge routers, and real-time websockets are live-connected with @{cleanUser}
+                Every cloud edge target, WebSocket proxy, and serverless pipeline is synchronized with @{cleanUser}'s active repositories
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs font-mono">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-slate-400">Vercel:</span>
-              <span className="text-cyan-400 font-bold">{frontendRepos.length} Deploys</span>
+          {/* Quick Metrics Header */}
+          <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800">
+              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
+              <span className="text-slate-400">Stars:</span>
+              <span className="text-amber-300 font-bold">{totalStarsCount}</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-slate-400">Render:</span>
-              <span className="text-purple-400 font-bold">{backendRepos.length} Services</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800">
+              <GitFork className="w-3.5 h-3.5 text-purple-400" />
+              <span className="text-slate-400">Forks:</span>
+              <span className="text-purple-300 font-bold">{totalForksCount}</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-emerald-400 font-bold">100% Real-Time</span>
+              <span className="text-emerald-400 font-bold">Edge Telemetry 100%</span>
             </div>
           </div>
         </div>
 
-        {/* GitHub Preset Quick Switchers */}
+        {/* GitHub Preset Switchers */}
         <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
-          <span className="text-slate-400 text-[11px]">Quick Load GitHub Profiles:</span>
+          <span className="text-slate-400 text-[11px] flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-cyan-400" />
+            Quick Switch GitHub Profile:
+          </span>
           {PRESET_GITHUB_USERS.map((preset) => (
             <button
               key={preset}
               type="button"
               onClick={() => handleConnectGitHub(undefined, preset)}
-              className={`px-2.5 py-1 rounded-lg border text-xs transition-colors cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer ${
                 cleanUser.toLowerCase() === preset.toLowerCase()
-                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 font-bold'
+                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 font-bold shadow-sm shadow-cyan-500/10'
                   : 'bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border-white/10 hover:border-cyan-500/30'
               }`}
             >
@@ -463,7 +549,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
           ))}
         </div>
 
-        {/* Real GitHub Account Input Form */}
+        {/* Live GitHub Account Sync Input Form */}
         <form onSubmit={(e) => handleConnectGitHub(e)} className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1">
           <div className="md:col-span-4">
             <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
@@ -475,8 +561,8 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                 type="text"
                 value={gitUsernameInput}
                 onChange={(e) => setGitUsernameInput(e.target.value)}
-                placeholder="e.g. your username or organization"
-                className="w-full pl-7 pr-3 py-2 rounded-xl bg-slate-950/80 border border-slate-700 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                placeholder="e.g. username or organization"
+                className="w-full pl-7 pr-3 py-2 rounded-xl bg-slate-950/90 border border-slate-700 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
               />
             </div>
           </div>
@@ -490,7 +576,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
               value={gitTokenInput}
               onChange={(e) => setGitTokenInput(e.target.value)}
               placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-              className="w-full px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-700 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+              className="w-full px-3 py-2 rounded-xl bg-slate-950/90 border border-slate-700 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
             />
           </div>
 
@@ -501,7 +587,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
               className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold font-mono text-xs uppercase tracking-tighter shadow-md shadow-cyan-500/20 disabled:opacity-50 transition-all cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isGitHubLoading ? 'animate-spin' : ''}`} />
-              <span>{isGitHubLoading ? 'Syncing...' : 'Fetch Live GitHub'}</span>
+              <span>{isGitHubLoading ? 'Syncing...' : 'Fetch Live GitHub Profile'}</span>
             </button>
           </div>
         </form>
@@ -529,22 +615,22 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         )}
       </div>
 
-      {/* 2. Three-Tier Production Cloud Architecture Guide & Pipeline Matrix */}
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-cyan-500/30 space-y-5 shadow-xl">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-3 border-b border-white/5">
+      {/* 2. Interactive Five-Pipeline Architecture & Deployment Control */}
+      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-cyan-500/30 space-y-5 shadow-xl">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pb-3 border-b border-white/5">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300">
+            <div className="p-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300">
               <Network className="w-5 h-5" />
             </div>
             <div>
               <h4 className="text-sm font-bold text-white font-mono uppercase tracking-wide flex items-center gap-2 flex-wrap">
-                <span>Production Deployment & Real-Time WebSockets Pipelines</span>
+                <span>Cloud Platforms & Git Deploy Engine</span>
                 <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-mono">
-                  LIVE DATA FOR @{cleanUser}
+                  ACTIVE FOR @{cleanUser}
                 </span>
               </h4>
               <p className="text-xs text-slate-400 font-mono">
-                Real-time GitHub repos connection: Vercel (Edge Frontend), Render (Socket.io Backend), Cloudflare (WS Proxy) & Supabase
+                5-Tier Stack: Vercel (Edge UI) &bull; Render (Node/WS API) &bull; Cloudflare (DNS & WS Proxy) &bull; Supabase (Realtime DB) &bull; GitHub VCS
               </p>
             </div>
           </div>
@@ -556,29 +642,29 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                 soundFx.playClick(500, 0.02);
                 setActivePipelineTab('vercel');
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activePipelineTab === 'vercel' ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              1. Vercel ({frontendRepos.length} repos)
+              1. Vercel Edge ({frontendRepos.length})
             </button>
             <button
               onClick={() => {
                 soundFx.playClick(500, 0.02);
                 setActivePipelineTab('render');
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activePipelineTab === 'render' ? 'bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              2. Render ({backendRepos.length} servers)
+              2. Render API ({backendRepos.length})
             </button>
             <button
               onClick={() => {
                 soundFx.playClick(500, 0.02);
                 setActivePipelineTab('cloudflare');
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activePipelineTab === 'cloudflare' ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -589,22 +675,33 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                 soundFx.playClick(500, 0.02);
                 setActivePipelineTab('supabase');
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activePipelineTab === 'supabase' ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              4. Supabase DB
+              4. Supabase CDC DB
             </button>
             <button
               onClick={() => {
                 soundFx.playClick(500, 0.02);
                 setActivePipelineTab('github');
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activePipelineTab === 'github' ? 'bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              5. GitHub VCS
+              5. GitHub Webhooks
+            </button>
+            <button
+              onClick={() => {
+                soundFx.playClick(500, 0.02);
+                setActivePipelineTab('matrix');
+              }}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                activePipelineTab === 'matrix' ? 'bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Fleet Matrix
             </button>
           </div>
         </div>
@@ -616,7 +713,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
               <div className="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 space-y-1">
                 <span className="font-bold flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                  1. Vercel Edge Hosting: Connected to @{cleanUser} ({frontendRepos.length} Deployable Repos)
+                  1. Vercel Edge Frontend: Connected to @{cleanUser} ({frontendRepos.length} Deployable Repos)
                 </span>
                 <p className="text-slate-300 text-[11px] leading-relaxed">
                   Vercel listens to push webhooks on GitHub to automatically build and deploy your frontend projects to its globally distributed edge network.
@@ -629,7 +726,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                   Select Connected GitHub Repository to Inspect Vercel Deploy:
                 </label>
                 <div className="flex gap-2 flex-wrap">
-                  {frontendRepos.slice(0, 5).map((repo) => (
+                  {frontendRepos.slice(0, 6).map((repo) => (
                     <button
                       key={repo.id}
                       type="button"
@@ -687,7 +784,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-emerald-400 flex items-center gap-2">
                 <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>
-                  <strong>Real-time hook:</strong> Pushing commits to <code className="bg-slate-900 px-1 py-0.5 rounded text-white">{cleanUser}/{selectedVercelRepo?.name}</code> automatically triggers an atomic Vercel deployment with zero downtime.
+                  <strong>Real-time trigger:</strong> Pushing commits to <code className="bg-slate-900 px-1 py-0.5 rounded text-white">{cleanUser}/{selectedVercelRepo?.name}</code> automatically triggers an atomic Vercel deployment with zero downtime.
                 </span>
               </div>
             </div>
@@ -717,7 +814,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Latest Commit:</span>
-                  <span className="text-cyan-400 font-mono">{realCommits[0]?.sha.substring(0, 7) || 'HEAD'}</span>
+                  <span className="text-cyan-400 font-mono">{realCommits[0]?.sha?.substring(0, 7) || 'HEAD'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Edge Domain:</span>
@@ -756,7 +853,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                   Select Connected Backend Repository on Render:
                 </label>
                 <div className="flex gap-2 flex-wrap">
-                  {backendRepos.slice(0, 5).map((repo) => (
+                  {backendRepos.slice(0, 6).map((repo) => (
                     <button
                       key={repo.id}
                       type="button"
@@ -910,7 +1007,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                 <div>
                   <span className="font-bold text-white text-xs block">WebSockets Proxy Protocol</span>
                   <span className="text-[10px] text-slate-400">
-                    {cloudflareWsEnabled ? 'Allow full-duplex WS/WSS packets' : 'Disabled (WebSockets will be dropped by firewall)'}
+                    {cloudflareWsEnabled ? 'Allow full-duplex WS/WSS packets' : 'Disabled (WebSockets dropped by edge firewall)'}
                   </span>
                 </div>
 
@@ -998,7 +1095,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                   Select Connected Database Repository:
                 </label>
                 <div className="flex gap-2 flex-wrap">
-                  {databaseRepos.slice(0, 5).map((repo) => (
+                  {databaseRepos.slice(0, 6).map((repo) => (
                     <button
                       key={repo.id}
                       type="button"
@@ -1069,7 +1166,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Replication Latency:</span>
-                  <span className="text-emerald-400 font-bold">4.2 ms</span>
+                  <span className="text-emerald-400 font-bold">3.8 ms</span>
                 </div>
               </div>
 
@@ -1087,6 +1184,18 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                     : 'Simulate Realtime DB Row Broadcast'}
                 </span>
               </button>
+
+              {/* CDC Live Stream Window */}
+              {cdcLogs.length > 0 && (
+                <div className="p-2.5 rounded-xl bg-black/60 border border-slate-800 text-[10px] font-mono space-y-1 max-h-24 overflow-y-auto">
+                  {cdcLogs.map((log, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-slate-300">
+                      <span className="text-emerald-400 font-bold">[{log.event}] {log.table}</span>
+                      <span className="text-slate-500">{log.timestamp}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1182,6 +1291,106 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
                     : 'Test Webhook Ping Delivery'}
                 </span>
               </button>
+
+              {/* Webhook Stream list */}
+              <div className="p-2 rounded-xl bg-black/60 border border-slate-800 space-y-1 max-h-24 overflow-y-auto text-[10px]">
+                {webhookEventsList.map((ev, i) => (
+                  <div key={i} className="flex items-center justify-between text-slate-400">
+                    <span className="text-indigo-400">{ev.event} &rarr; {ev.repo}</span>
+                    <span className="text-emerald-400">{ev.status} OK</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 6: Fleet Deployment Matrix for All User Repositories */}
+        {activePipelineTab === 'matrix' && (
+          <div className="space-y-3 font-mono text-xs animate-in fade-in duration-150">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <span className="text-slate-300 font-bold flex items-center gap-2">
+                <Layers className="w-4 h-4 text-cyan-400" />
+                Repository-to-Cloud Deployment Fleet Matrix for @{cleanUser}
+              </span>
+              <span className="text-slate-400 text-[11px]">
+                {realRepos.length} Total Repositories Mapped
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800 text-[10px] text-slate-400 uppercase">
+                    <th className="py-2 px-3">Repository</th>
+                    <th className="py-2 px-3">Target Cloud Platform</th>
+                    <th className="py-2 px-3">Branch</th>
+                    <th className="py-2 px-3">Live Endpoint</th>
+                    <th className="py-2 px-3">Status</th>
+                    <th className="py-2 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-[11px]">
+                  {realRepos.slice(0, 8).map((repo) => {
+                    const isFrontend = (repo.language === 'TypeScript' || repo.language === 'JavaScript' || repo.language === 'HTML');
+                    const targetPlatform = isFrontend ? 'Vercel Edge' : 'Render Container';
+                    const targetDomain = isFrontend 
+                      ? `${repo.name}-${cleanUser}.vercel.app`
+                      : `${repo.name}-api.onrender.com`;
+                    const deployState = repoDeployStates[repo.name];
+
+                    return (
+                      <tr key={repo.id} className="hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 px-3 font-bold text-white flex items-center gap-1.5">
+                          <Code2 className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>{repo.name}</span>
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-300">
+                          <span className={`px-2 py-0.5 rounded text-[10px] ${
+                            isFrontend 
+                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' 
+                              : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                          }`}>
+                            {targetPlatform}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-400 font-mono">
+                          {repo.default_branch || 'main'}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <a
+                            href={`https://${targetDomain}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-cyan-400 hover:underline truncate block max-w-[180px]"
+                          >
+                            {targetDomain}
+                          </a>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          {deployState?.status === 'deploying' ? (
+                            <span className="text-amber-400 flex items-center gap-1">
+                              <RefreshCw className="w-3 h-3 animate-spin" /> Deploying
+                            </span>
+                          ) : (
+                            <span className="text-emerald-400 flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" /> Live
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <button
+                            onClick={() => handleSimulateDeploy(targetPlatform, repo.name)}
+                            className="px-2 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono transition-colors cursor-pointer"
+                          >
+                            Deploy
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -1192,7 +1401,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         {dynamicIntegrations.map((item) => (
           <div
             key={item.id}
-            className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-4 border border-white/10 space-y-3 flex flex-col justify-between hover:border-cyan-500/40 transition-all shadow-lg"
+            className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 border border-white/10 space-y-3 flex flex-col justify-between hover:border-cyan-500/40 transition-all shadow-lg"
           >
             <div>
               <div className="flex items-center justify-between">
@@ -1259,15 +1468,15 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         
         {/* Left 2 Cols: Live Repositories Matrix */}
-        <div className="lg:col-span-2 bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-4 shadow-lg">
+        <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-4 shadow-lg">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-white/5">
             <div>
               <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-white flex items-center gap-2">
-                Live GitHub Repositories
+                Live Repositories & Cloud Targets
                 <span className="font-handjet text-lg text-cyan-400">[{realRepos.length} Repos]</span>
               </h4>
               <p className="text-[10px] font-mono text-slate-400">
-                Synchronized from GitHub API for @{cleanUser}
+                Synchronized directly from GitHub API for @{cleanUser}
               </p>
             </div>
 
@@ -1356,7 +1565,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
         {/* Right Col: Language Distribution & Live Commits */}
         <div className="space-y-4">
           {/* Language Breakdown */}
-          <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-3 shadow-lg">
+          <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-3 shadow-lg">
             <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-white">
               Language Matrix
             </h4>
@@ -1382,7 +1591,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
           </div>
 
           {/* Recent Live Commits */}
-          <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-3 shadow-lg">
+          <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-3 shadow-lg">
             <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-white">
               Latest Live Commits (@{cleanUser})
             </h4>
