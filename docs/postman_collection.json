@@ -1,0 +1,354 @@
+{
+  "info": {
+    "_postman_id": "8a39c912-32b0-4592-80ea-devpulse-api-v1",
+    "name": "DevPulse REST API (Users, Projects, Tasks)",
+    "description": "Comprehensive Postman collection for DevPulse Users, Projects, and Tasks REST API with automated validation, status management, and error handling tests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "sampleUserId",
+      "value": "user-1",
+      "type": "string"
+    },
+    {
+      "key": "sampleProjectId",
+      "value": "proj-1",
+      "type": "string"
+    },
+    {
+      "key": "sampleTaskId",
+      "value": "task-101",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "OpenAPI Spec JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/openapi.json",
+              "host": ["{{baseUrl}}"],
+              "path": ["openapi.json"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=10&sortBy=createdAt&sortOrder=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "sortBy", "value": "createdAt" },
+                { "key": "sortOrder", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{sampleUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{sampleUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Devin Thorne\",\n  \"handle\": \"@dthorne\",\n  \"email\": \"devin.thorne@devpulse.io\",\n  \"role\": \"Staff DevOps Architect\",\n  \"team\": \"Infrastructure & Cloud\",\n  \"status\": \"In the Zone\",\n  \"skills\": [\"Terraform\", \"AWS\", \"Docker\", \"Kubernetes\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Update User (Partial)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Vibecoding\",\n  \"bio\": \"Optimizing Kubernetes ingress & CI/CD deployment times.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{sampleUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{sampleUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get User Stats & Telemetry",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{sampleUserId}}/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{sampleUserId}}", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get User Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{sampleUserId}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{sampleUserId}}", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{sampleUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{sampleUserId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Get All Projects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects"]
+            }
+          }
+        },
+        {
+          "name": "Get Project by ID (with Task Summary)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{sampleProjectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", "{{sampleProjectId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PulseFlow Mobile App\",\n  \"key\": \"MOBILE\",\n  \"description\": \"Mobile companion dashboard for real-time task notifications and metrics.\",\n  \"ownerId\": \"{{sampleUserId}}\",\n  \"primaryLanguage\": \"TypeScript\",\n  \"languages\": [\"TypeScript\", \"Swift\"],\n  \"frameworks\": [\"React Native\", \"Expo\"],\n  \"status\": \"Active Sprint\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects"]
+            }
+          }
+        },
+        {
+          "name": "Get Project Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{sampleProjectId}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", "{{sampleProjectId}}", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Get Project Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{sampleProjectId}}/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", "{{sampleProjectId}}", "members"]
+            }
+          }
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{sampleProjectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", "{{sampleProjectId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks & Status Management",
+      "item": [
+        {
+          "name": "Get All Tasks (Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks?status=in-progress&priority=High",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"],
+              "query": [
+                { "key": "status", "value": "in-progress" },
+                { "key": "priority", "value": "High" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Task by ID or Key",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/PULSE-101",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "PULSE-101"]
+            }
+          }
+        },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Implement Zero-Latency WebSockets for Live Activity Feed\",\n  \"description\": \"Replace polling with real-time SSE / WebSockets stream.\",\n  \"projectId\": \"{{sampleProjectId}}\",\n  \"assigneeId\": \"{{sampleUserId}}\",\n  \"type\": \"Story\",\n  \"status\": \"todo\",\n  \"priority\": \"High\",\n  \"storyPoints\": 5,\n  \"estimatedHours\": 8,\n  \"tags\": [\"Backend\", \"WebSockets\", \"RealTime\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"]
+            }
+          }
+        },
+        {
+          "name": "Transition Task Status (Kanban Move)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in-progress\",\n  \"changedBy\": \"{{sampleUserId}}\",\n  \"note\": \"Started active development sprint\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{sampleTaskId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "{{sampleTaskId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Mark Task Done",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"done\",\n  \"changedBy\": \"{{sampleUserId}}\",\n  \"note\": \"PR merged and verified in staging\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{sampleTaskId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "{{sampleTaskId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Update Task Status",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taskIds\": [\"task-101\", \"task-102\"],\n  \"status\": \"in-review\",\n  \"changedBy\": \"{{sampleUserId}}\",\n  \"note\": \"Batch sprint status transition\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/bulk-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "bulk-status"]
+            }
+          }
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{sampleTaskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "{{sampleTaskId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,533 @@
+{
+  "users": [
+    {
+      "id": "user-1",
+      "name": "Alex Rivera",
+      "handle": "@arivera_dev",
+      "email": "alex.rivera@devpulse.io",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "role": "Staff Frontend Architect",
+      "team": "Core Platform & DX",
+      "status": "In the Zone",
+      "statusColor": "#10b981",
+      "streakDays": 42,
+      "storyPointsCompleted": 192,
+      "totalCommitsToday": 14,
+      "prMergeRate": 96,
+      "velocityScore": 98,
+      "focusMinutesToday": 320,
+      "bio": "Obsessed with micro-interactions, sub-50ms render latency, and WebGL particle shaders.",
+      "skills": [
+        "React 19",
+        "TypeScript",
+        "Tailwind CSS",
+        "WebGL",
+        "Web Workers",
+        "Performance Profiling"
+      ],
+      "peakCodingWindow": "09:00 - 13:00",
+      "githubUsername": "arivera-dev",
+      "customDesignation": "Pixel Sorcerer ✨",
+      "xpPoints": 4980,
+      "level": 18,
+      "createdAt": "2025-01-10T08:00:00.000Z",
+      "updatedAt": "2026-09-04T04:05:13.343Z"
+    },
+    {
+      "id": "user-2",
+      "name": "Sarah Chen",
+      "handle": "@schen_cloud",
+      "email": "sarah.chen@devpulse.io",
+      "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+      "role": "Principal Systems Engineer",
+      "team": "Infrastructure & Cloud",
+      "status": "Reviewing Code",
+      "statusColor": "#6366f1",
+      "streakDays": 28,
+      "storyPointsCompleted": 210,
+      "totalCommitsToday": 8,
+      "prMergeRate": 98,
+      "velocityScore": 94,
+      "focusMinutesToday": 240,
+      "bio": "Kubernetes whisperer, distributed systems reliability fanatic, zero-downtime evangelist.",
+      "skills": [
+        "Kubernetes",
+        "Go",
+        "Rust",
+        "Terraform",
+        "Kafka",
+        "eBPF"
+      ],
+      "peakCodingWindow": "14:00 - 18:00",
+      "githubUsername": "sarah-chen-cloud",
+      "customDesignation": "Cluster Queen 👑",
+      "xpPoints": 5200,
+      "level": 21,
+      "createdAt": "2025-01-12T09:30:00.000Z",
+      "updatedAt": "2026-09-04T00:00:00.000Z"
+    },
+    {
+      "id": "user-3",
+      "name": "Marcus Vance",
+      "handle": "@mvance_ai",
+      "email": "marcus.vance@devpulse.io",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      "role": "Senior ML Engineer",
+      "team": "AI & Intelligence",
+      "status": "Vibecoding",
+      "statusColor": "#ec4899",
+      "streakDays": 19,
+      "storyPointsCompleted": 142,
+      "totalCommitsToday": 6,
+      "prMergeRate": 92,
+      "velocityScore": 89,
+      "focusMinutesToday": 190,
+      "bio": "Fine-tuning LLMs, multi-agent orchestrations, and context retrieval optimization.",
+      "skills": [
+        "PyTorch",
+        "FastAPI",
+        "Gemini SDK",
+        "LangChain",
+        "Vector DBs",
+        "Python"
+      ],
+      "peakCodingWindow": "21:00 - 02:00",
+      "githubUsername": "mvance-ai",
+      "customDesignation": "Neural Alchemist 🧠",
+      "xpPoints": 3750,
+      "level": 15,
+      "createdAt": "2025-02-01T10:15:00.000Z",
+      "updatedAt": "2026-09-04T00:00:00.000Z"
+    },
+    {
+      "id": "user-4",
+      "name": "Elena Rostova",
+      "handle": "@elena_sec",
+      "email": "elena.rostova@devpulse.io",
+      "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+      "role": "Lead Security Engineer",
+      "team": "Security & Compliance",
+      "status": "In Sprint Planning",
+      "statusColor": "#f59e0b",
+      "streakDays": 34,
+      "storyPointsCompleted": 165,
+      "totalCommitsToday": 3,
+      "prMergeRate": 100,
+      "velocityScore": 91,
+      "focusMinutesToday": 280,
+      "bio": "OAuth2/OIDC specialist, cryptosec enthusiast, fuzzing pipelines & red team automation.",
+      "skills": [
+        "OAuth2",
+        "Cryptography",
+        "Node.js",
+        "Go",
+        "OWASP Top 10",
+        "Penetration Testing"
+      ],
+      "peakCodingWindow": "10:00 - 14:00",
+      "githubUsername": "elena-rostova-sec",
+      "customDesignation": "Firewall Sentinel 🛡️",
+      "xpPoints": 4100,
+      "level": 17,
+      "createdAt": "2025-02-15T11:00:00.000Z",
+      "updatedAt": "2026-09-04T00:00:00.000Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "DevPulse Core Dashboard",
+      "key": "PULSE",
+      "description": "Real-time developer telemetry, live Kanban board, CI/CD telemetry and analytics dashboard.",
+      "primaryLanguage": "TypeScript",
+      "languages": [
+        "TypeScript",
+        "JavaScript",
+        "CSS",
+        "HTML"
+      ],
+      "frameworks": [
+        "React 19",
+        "TailwindCSS v4",
+        "Vite",
+        "Express"
+      ],
+      "techStackBadges": [
+        "TypeScript",
+        "React 19",
+        "TailwindCSS",
+        "Express",
+        "Vite",
+        "Web Workers"
+      ],
+      "status": "Active Sprint",
+      "ownerId": "user-1",
+      "memberIds": [
+        "user-1",
+        "user-2",
+        "user-3",
+        "user-4"
+      ],
+      "repoUrl": "https://github.com/devpulse/devpulse-core",
+      "stars": 342,
+      "forks": 48,
+      "openIssues": 12,
+      "defaultBranch": "main",
+      "createdAt": "2025-01-15T00:00:00.000Z",
+      "updatedAt": "2026-09-04T00:00:00.000Z"
+    },
+    {
+      "id": "proj-2",
+      "name": "PulseFlow Agentic Engine",
+      "key": "FLOW",
+      "description": "High-throughput asynchronous LLM agent orchestration framework with vector semantic caching.",
+      "primaryLanguage": "Python",
+      "languages": [
+        "Python",
+        "TypeScript",
+        "Go"
+      ],
+      "frameworks": [
+        "FastAPI",
+        "PyTorch",
+        "Redis",
+        "Qdrant"
+      ],
+      "techStackBadges": [
+        "Python",
+        "FastAPI",
+        "Gemini 2.5",
+        "Docker",
+        "Redis"
+      ],
+      "status": "In Progress",
+      "ownerId": "user-3",
+      "memberIds": [
+        "user-3",
+        "user-1"
+      ],
+      "repoUrl": "https://github.com/devpulse/pulseflow-engine",
+      "stars": 580,
+      "forks": 92,
+      "openIssues": 7,
+      "defaultBranch": "main",
+      "createdAt": "2025-02-01T00:00:00.000Z",
+      "updatedAt": "2026-09-04T00:00:00.000Z"
+    },
+    {
+      "id": "proj-3",
+      "name": "DevPulse Cloud Edge Gateway",
+      "key": "EDGE",
+      "description": "Global low-latency API gateway with rate-limiting, JWT authentication, and telemetry ingestion.",
+      "primaryLanguage": "Go",
+      "languages": [
+        "Go",
+        "Rust",
+        "TypeScript"
+      ],
+      "frameworks": [
+        "gRPC",
+        "Envoy",
+        "Cloudflare Workers"
+      ],
+      "techStackBadges": [
+        "Go",
+        "gRPC",
+        "Kubernetes",
+        "Cloudflare",
+        "Prometheus"
+      ],
+      "status": "Maintained",
+      "ownerId": "user-2",
+      "memberIds": [
+        "user-2",
+        "user-4"
+      ],
+      "repoUrl": "https://github.com/devpulse/edge-gateway",
+      "stars": 215,
+      "forks": 31,
+      "openIssues": 3,
+      "defaultBranch": "main",
+      "createdAt": "2025-01-20T00:00:00.000Z",
+      "updatedAt": "2026-09-04T00:00:00.000Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task-101",
+      "key": "PULSE-101",
+      "title": "Implement optimistic UI updates for Kanban drag-and-drop",
+      "description": "Ensure cards immediately snap to target columns with rollback on network failure.",
+      "projectId": "proj-1",
+      "assigneeId": "user-1",
+      "reporterId": "user-2",
+      "type": "Story",
+      "status": "in-review",
+      "priority": "High",
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "timeSpentHours": 4.5,
+      "tags": [
+        "Frontend",
+        "Kanban",
+        "UX",
+        "React 19"
+      ],
+      "sprint": "Sprint 24 - Turbo Launch",
+      "epic": "Interactive Board",
+      "epicColor": "#3b82f6",
+      "linkedPR": "PR #142",
+      "dueDate": "2026-09-10",
+      "completedAt": null,
+      "statusHistory": [
+        {
+          "fromStatus": null,
+          "toStatus": "todo",
+          "changedAt": "2026-09-01T10:00:00.000Z",
+          "changedBy": "user-2",
+          "note": "Task created during sprint planning"
+        },
+        {
+          "fromStatus": "todo",
+          "toStatus": "in-progress",
+          "changedAt": "2026-09-02T14:30:00.000Z",
+          "changedBy": "user-1",
+          "note": "Started implementation with React 19 useOptimistic hook"
+        },
+        {
+          "fromStatus": "in-progress",
+          "toStatus": "in-review",
+          "changedAt": "2026-09-04T04:05:13.367Z",
+          "changedBy": "user-1",
+          "note": "Sprint batch review transition"
+        }
+      ],
+      "createdAt": "2026-09-01T10:00:00.000Z",
+      "updatedAt": "2026-09-04T04:05:13.367Z"
+    },
+    {
+      "id": "task-102",
+      "key": "PULSE-102",
+      "title": "Centralize REST API error responses and HTTP status codes",
+      "description": "Construct custom ApiError hierarchy with standardized JSON response schemas across all endpoints.",
+      "projectId": "proj-1",
+      "assigneeId": "user-1",
+      "reporterId": "user-4",
+      "type": "Task",
+      "status": "in-review",
+      "priority": "Critical",
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "timeSpentHours": 11,
+      "tags": [
+        "Backend",
+        "API",
+        "Error Handling",
+        "Express"
+      ],
+      "sprint": "Sprint 24 - Turbo Launch",
+      "epic": "REST API Backend",
+      "epicColor": "#10b981",
+      "linkedPR": "PR #150",
+      "dueDate": "2026-09-05",
+      "completedAt": null,
+      "statusHistory": [
+        {
+          "fromStatus": null,
+          "toStatus": "todo",
+          "changedAt": "2026-09-01T11:00:00.000Z",
+          "changedBy": "user-4",
+          "note": "Security review requirement"
+        },
+        {
+          "fromStatus": "todo",
+          "toStatus": "in-progress",
+          "changedAt": "2026-09-03T09:00:00.000Z",
+          "changedBy": "user-1",
+          "note": "Implementing custom middleware"
+        },
+        {
+          "fromStatus": "in-progress",
+          "toStatus": "in-review",
+          "changedAt": "2026-09-04T08:00:00.000Z",
+          "changedBy": "user-1",
+          "note": "PR opened and ready for review"
+        }
+      ],
+      "createdAt": "2026-09-01T11:00:00.000Z",
+      "updatedAt": "2026-09-04T08:00:00.000Z"
+    },
+    {
+      "id": "task-103",
+      "key": "PULSE-103",
+      "title": "Add interactive Swagger UI / OpenAPI 3.0 specification docs",
+      "description": "Provide dynamic Swagger endpoint at /api/docs and OpenAPI JSON spec at /api/openapi.json.",
+      "projectId": "proj-1",
+      "assigneeId": "user-1",
+      "reporterId": "user-1",
+      "type": "Story",
+      "status": "done",
+      "priority": "Medium",
+      "storyPoints": 5,
+      "estimatedHours": 6,
+      "timeSpentHours": 5,
+      "tags": [
+        "Docs",
+        "Swagger",
+        "OpenAPI"
+      ],
+      "sprint": "Sprint 24 - Turbo Launch",
+      "epic": "Developer Experience",
+      "epicColor": "#8b5cf6",
+      "linkedPR": "PR #152",
+      "dueDate": "2026-09-04",
+      "completedAt": "2026-09-04T07:30:00.000Z",
+      "statusHistory": [
+        {
+          "fromStatus": null,
+          "toStatus": "todo",
+          "changedAt": "2026-09-02T10:00:00.000Z",
+          "changedBy": "user-1",
+          "note": "Task initialized"
+        },
+        {
+          "fromStatus": "todo",
+          "toStatus": "in-progress",
+          "changedAt": "2026-09-03T14:00:00.000Z",
+          "changedBy": "user-1",
+          "note": "Building OpenAPI generator"
+        },
+        {
+          "fromStatus": "in-progress",
+          "toStatus": "done",
+          "changedAt": "2026-09-04T07:30:00.000Z",
+          "changedBy": "user-1",
+          "note": "Swagger UI live and working"
+        }
+      ],
+      "createdAt": "2026-09-02T10:00:00.000Z",
+      "updatedAt": "2026-09-04T07:30:00.000Z"
+    },
+    {
+      "id": "task-104",
+      "key": "FLOW-201",
+      "title": "Vector semantic cache layer for recurring LLM prompts",
+      "description": "Reduce API inference costs by caching high-similarity prompt embeddings in Qdrant.",
+      "projectId": "proj-2",
+      "assigneeId": "user-3",
+      "reporterId": "user-3",
+      "type": "Epic",
+      "status": "in-progress",
+      "priority": "High",
+      "storyPoints": 13,
+      "estimatedHours": 20,
+      "timeSpentHours": 12,
+      "tags": [
+        "AI",
+        "Embeddings",
+        "Cache",
+        "Performance"
+      ],
+      "sprint": "Sprint 12 - Agent Brain",
+      "epic": "LLM Orchestration",
+      "epicColor": "#ec4899",
+      "dueDate": "2026-09-18",
+      "completedAt": null,
+      "statusHistory": [
+        {
+          "fromStatus": null,
+          "toStatus": "todo",
+          "changedAt": "2026-09-01T08:00:00.000Z",
+          "changedBy": "user-3"
+        },
+        {
+          "fromStatus": "todo",
+          "toStatus": "in-progress",
+          "changedAt": "2026-09-02T09:30:00.000Z",
+          "changedBy": "user-3"
+        }
+      ],
+      "createdAt": "2026-09-01T08:00:00.000Z",
+      "updatedAt": "2026-09-02T09:30:00.000Z"
+    },
+    {
+      "id": "task-105",
+      "key": "EDGE-301",
+      "title": "Implement token bucket rate-limiting on gateway ingress",
+      "description": "Enforce per-IP and per-API-key quota limits with sliding window rate limiter.",
+      "projectId": "proj-3",
+      "assigneeId": "user-2",
+      "reporterId": "user-4",
+      "type": "Bug",
+      "status": "in-review",
+      "priority": "Critical",
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "timeSpentHours": 0,
+      "tags": [
+        "Security",
+        "Gateway",
+        "Networking",
+        "Go"
+      ],
+      "sprint": "Sprint 16 - Ingress Shield",
+      "epic": "Edge Gateway",
+      "epicColor": "#f59e0b",
+      "dueDate": "2026-09-12",
+      "completedAt": null,
+      "statusHistory": [
+        {
+          "fromStatus": null,
+          "toStatus": "todo",
+          "changedAt": "2026-09-03T11:00:00.000Z",
+          "changedBy": "user-4"
+        },
+        {
+          "fromStatus": "todo",
+          "toStatus": "in-review",
+          "changedAt": "2026-09-04T04:05:13.369Z",
+          "changedBy": "user-1",
+          "note": "Sprint batch review transition"
+        }
+      ],
+      "createdAt": "2026-09-03T11:00:00.000Z",
+      "updatedAt": "2026-09-04T04:05:13.369Z"
+    },
+    {
+      "id": "task-106",
+      "key": "PULSE-104",
+      "title": "Draft OpenAPI specification and postman collection export",
+      "description": "Document all endpoint query params, response shapes, and create downloadable Postman v2.1 collection.",
+      "projectId": "proj-1",
+      "assigneeId": "user-1",
+      "reporterId": "user-1",
+      "type": "Task",
+      "status": "backlog",
+      "priority": "Low",
+      "storyPoints": 3,
+      "estimatedHours": 4,
+      "timeSpentHours": 0,
+      "tags": [
+        "Documentation",
+        "Postman"
+      ],
+      "sprint": "Sprint 25 - Polish",
+      "epic": "Developer Experience",
+      "epicColor": "#8b5cf6",
+      "dueDate": "2026-09-25",
+      "completedAt": null,
+      "statusHistory": [
+        {
+          "fromStatus": null,
+          "toStatus": "backlog",
+          "changedAt": "2026-09-04T06:00:00.000Z",
+          "changedBy": "user-1"
+        }
+      ],
+      "createdAt": "2026-09-04T06:00:00.000Z",
+      "updatedAt": "2026-09-04T06:00:00.000Z"
+    }
+  ],
+  "version": "1.0.0",
+  "lastUpdated": "2026-09-04T04:05:13.376Z"
+}
