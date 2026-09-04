@@ -99,7 +99,7 @@ It pairs a **high-performance React 19 frontend** with a modular **Node.js/Expre
 │   Users Service   │  Projects Service │   Tasks Service   │   Docs & OpenAPI Generator  │
 ├───────────────────┴───────────────────┴───────────────────┴─────────────────────────────┤
 │ • Declarative Schema Validation Middleware                                              │
-│ • Custom ApiError Centralized Error Handler (400, 401, 404, 409, 422, 500)             │
+│ • Custom ApiError Centralized Error Handler (400, 401, 404, 409, 422, 500)              │
 │ • Persistent In-Memory + Atomic JSON Store (server/data/db.json)                        │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
