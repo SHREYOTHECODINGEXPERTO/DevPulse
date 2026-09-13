@@ -14,8 +14,8 @@ export interface ProjectFilterOptions {
 }
 
 export class ProjectService {
-  public static getAllProjects(options: ProjectFilterOptions = {}) {
-    let projects = db.getProjects();
+  public static async getAllProjects(options: ProjectFilterOptions = {}) {
+    let projects = await db.getProjects();
 
     // Search filter
     if (options.search) {
@@ -26,7 +26,7 @@ export class ProjectService {
           p.key.toLowerCase().includes(q) ||
           p.description.toLowerCase().includes(q) ||
           p.primaryLanguage.toLowerCase().includes(q) ||
-          p.techStackBadges.some((b) => b.toLowerCase().includes(q))
+          (p.techStackBadges && p.techStackBadges.some((b) => b.toLowerCase().includes(q)))
       );
     }
 
@@ -82,8 +82,8 @@ export class ProjectService {
     };
   }
 
-  public static getProjectById(id: string, includeStats: boolean = true) {
-    const project = db.getProjectById(id);
+  public static async getProjectById(id: string, includeStats: boolean = true) {
+    const project = await db.getProjectById(id);
     if (!project) {
       throw new NotFoundError('Project', id);
     }
@@ -92,9 +92,11 @@ export class ProjectService {
       return project;
     }
 
-    const tasks = db.getTasksByProjectId(id);
-    const owner = db.getUserById(project.ownerId);
-    const members = project.memberIds.map((mId) => db.getUserById(mId)).filter(Boolean) as User[];
+    const tasks = await db.getTasksByProjectId(id);
+    const owner = await db.getUserById(project.ownerId);
+    const memberPromises = (project.memberIds || []).map((mId) => db.getUserById(mId));
+    const resolvedMembers = await Promise.all(memberPromises);
+    const members = resolvedMembers.filter(Boolean) as User[];
 
     const statusBreakdown = {
       backlog: tasks.filter((t) => t.status === 'backlog').length,
@@ -125,16 +127,16 @@ export class ProjectService {
     };
   }
 
-  public static createProject(dto: CreateProjectDto): Project {
+  public static async createProject(dto: CreateProjectDto): Promise<Project> {
     const normalizedKey = dto.key.toUpperCase().trim();
 
     // Check project key uniqueness
-    if (db.getProjectByKey(normalizedKey)) {
+    if (await db.getProjectByKey(normalizedKey)) {
       throw new ConflictError(`Project with key '${normalizedKey}' already exists`);
     }
 
     // Verify owner exists
-    const owner = db.getUserById(dto.ownerId);
+    const owner = await db.getUserById(dto.ownerId);
     if (!owner) {
       throw new BadRequestError(`Owner user with ID '${dto.ownerId}' does not exist`);
     }
@@ -164,11 +166,11 @@ export class ProjectService {
       updatedAt: now,
     };
 
-    return db.createProject(newProject);
+    return await db.createProject(newProject);
   }
 
-  public static updateProject(id: string, dto: UpdateProjectDto): Project {
-    const existing = db.getProjectById(id);
+  public static async updateProject(id: string, dto: UpdateProjectDto): Promise<Project> {
+    const existing = await db.getProjectById(id);
     if (!existing) {
       throw new NotFoundError('Project', id);
     }
@@ -177,7 +179,8 @@ export class ProjectService {
     if (dto.key) {
       const normalizedKey = dto.key.toUpperCase().trim();
       if (normalizedKey !== existing.key) {
-        if (db.getProjectByKey(normalizedKey)) {
+        const conflict = await db.getProjectByKey(normalizedKey);
+        if (conflict && conflict.id !== id) {
           throw new ConflictError(`Project with key '${normalizedKey}' already exists`);
         }
         dto.key = normalizedKey;
@@ -186,26 +189,26 @@ export class ProjectService {
 
     // Owner check
     if (dto.ownerId && dto.ownerId !== existing.ownerId) {
-      const owner = db.getUserById(dto.ownerId);
+      const owner = await db.getUserById(dto.ownerId);
       if (!owner) {
         throw new BadRequestError(`Owner user with ID '${dto.ownerId}' does not exist`);
       }
     }
 
-    const updated = db.updateProject(id, dto);
+    const updated = await db.updateProject(id, dto);
     if (!updated) {
       throw new NotFoundError('Project', id);
     }
     return updated;
   }
 
-  public static deleteProject(id: string): { success: boolean; message: string } {
-    const existing = db.getProjectById(id);
+  public static async deleteProject(id: string): Promise<{ success: boolean; message: string }> {
+    const existing = await db.getProjectById(id);
     if (!existing) {
       throw new NotFoundError('Project', id);
     }
 
-    const deleted = db.deleteProject(id);
+    const deleted = await db.deleteProject(id);
     if (!deleted) {
       throw new BadRequestError('Failed to delete project');
     }
@@ -216,20 +219,22 @@ export class ProjectService {
     };
   }
 
-  public static getProjectTasks(id: string, status?: string): Task[] {
-    this.getProjectById(id, false); // Validate existence
-    let tasks = db.getTasksByProjectId(id);
+  public static async getProjectTasks(id: string, status?: string): Promise<Task[]> {
+    await this.getProjectById(id, false); // Validate existence
+    let tasks = await db.getTasksByProjectId(id);
     if (status) {
       tasks = tasks.filter((t) => t.status.toLowerCase() === status.toLowerCase().trim());
     }
     return tasks;
   }
 
-  public static getProjectMembers(id: string): User[] {
-    const project = db.getProjectById(id);
+  public static async getProjectMembers(id: string): Promise<User[]> {
+    const project = await db.getProjectById(id);
     if (!project) {
       throw new NotFoundError('Project', id);
     }
-    return project.memberIds.map((mId) => db.getUserById(mId)).filter(Boolean) as User[];
+    const memberPromises = (project.memberIds || []).map((mId) => db.getUserById(mId));
+    const resolved = await Promise.all(memberPromises);
+    return resolved.filter(Boolean) as User[];
   }
 }

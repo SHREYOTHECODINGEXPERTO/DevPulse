@@ -32,13 +32,13 @@ export interface TaskFilterOptions {
 const VALID_STATUSES: TaskStatus[] = ['backlog', 'todo', 'in-progress', 'in-review', 'done'];
 
 export class TaskService {
-  public static getAllTasks(options: TaskFilterOptions = {}) {
-    let tasks = db.getTasks();
+  public static async getAllTasks(options: TaskFilterOptions = {}) {
+    let tasks = await db.getTasks();
 
     // Project filter (supports project ID or project Key)
     if (options.projectId) {
       const projQuery = options.projectId.trim();
-      const proj = db.getProjectById(projQuery) || db.getProjectByKey(projQuery);
+      const proj = (await db.getProjectById(projQuery)) || (await db.getProjectByKey(projQuery));
       if (proj) {
         tasks = tasks.filter((t) => t.projectId === proj.id);
       } else {
@@ -98,7 +98,7 @@ export class TaskService {
           t.title.toLowerCase().includes(q) ||
           t.key.toLowerCase().includes(q) ||
           (t.description && t.description.toLowerCase().includes(q)) ||
-          t.tags.some((tag) => tag.toLowerCase().includes(q))
+          (t.tags && t.tags.some((tag) => tag.toLowerCase().includes(q)))
       );
     }
 
@@ -125,9 +125,9 @@ export class TaskService {
     const paginated = tasks.slice(startIndex, startIndex + limit);
 
     // Populate light relation previews
-    const enriched = paginated.map((t) => {
-      const project = db.getProjectById(t.projectId);
-      const assignee = t.assigneeId ? db.getUserById(t.assigneeId) : null;
+    const enrichedPromises = paginated.map(async (t) => {
+      const project = await db.getProjectById(t.projectId);
+      const assignee = t.assigneeId ? await db.getUserById(t.assigneeId) : null;
       return {
         ...t,
         projectName: project?.name,
@@ -136,6 +136,8 @@ export class TaskService {
         assigneeAvatar: assignee?.avatar,
       };
     });
+
+    const enriched = await Promise.all(enrichedPromises);
 
     return {
       tasks: enriched,
@@ -150,15 +152,15 @@ export class TaskService {
     };
   }
 
-  public static getTaskById(id: string) {
-    const task = db.getTaskById(id) || db.getTaskByKey(id);
+  public static async getTaskById(id: string) {
+    const task = (await db.getTaskById(id)) || (await db.getTaskByKey(id));
     if (!task) {
       throw new NotFoundError('Task', id);
     }
 
-    const project = db.getProjectById(task.projectId);
-    const assignee = task.assigneeId ? db.getUserById(task.assigneeId) : null;
-    const reporter = db.getUserById(task.reporterId);
+    const project = await db.getProjectById(task.projectId);
+    const assignee = task.assigneeId ? await db.getUserById(task.assigneeId) : null;
+    const reporter = await db.getUserById(task.reporterId);
 
     return {
       ...task,
@@ -168,16 +170,16 @@ export class TaskService {
     };
   }
 
-  public static createTask(dto: CreateTaskDto): Task {
+  public static async createTask(dto: CreateTaskDto): Promise<Task> {
     // Validate project existence
-    const project = db.getProjectById(dto.projectId) || db.getProjectByKey(dto.projectId);
+    const project = (await db.getProjectById(dto.projectId)) || (await db.getProjectByKey(dto.projectId));
     if (!project) {
       throw new BadRequestError(`Project with ID or Key '${dto.projectId}' does not exist`);
     }
 
     // Validate assignee if provided
     if (dto.assigneeId) {
-      const assignee = db.getUserById(dto.assigneeId);
+      const assignee = await db.getUserById(dto.assigneeId);
       if (!assignee) {
         throw new BadRequestError(`Assignee user with ID '${dto.assigneeId}' does not exist`);
       }
@@ -185,7 +187,7 @@ export class TaskService {
 
     // Validate reporter if provided
     const reporterId = dto.reporterId || project.ownerId;
-    const reporter = db.getUserById(reporterId);
+    const reporter = await db.getUserById(reporterId);
     if (!reporter) {
       throw new BadRequestError(`Reporter user with ID '${reporterId}' does not exist`);
     }
@@ -196,8 +198,8 @@ export class TaskService {
     }
 
     const now = new Date().toISOString();
-    const existingTasksCount = db.getTasksByProjectId(project.id).length;
-    const taskKey = `${project.key}-${100 + existingTasksCount + 1}`;
+    const existingTasks = await db.getTasksByProjectId(project.id);
+    const taskKey = `${project.key}-${100 + existingTasks.length + 1}`;
 
     const newTask: Task = {
       id: `task-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -233,18 +235,18 @@ export class TaskService {
       updatedAt: now,
     };
 
-    return db.createTask(newTask);
+    return await db.createTask(newTask);
   }
 
-  public static updateTask(id: string, dto: UpdateTaskDto): Task {
-    const existing = db.getTaskById(id) || db.getTaskByKey(id);
+  public static async updateTask(id: string, dto: UpdateTaskDto): Promise<Task> {
+    const existing = (await db.getTaskById(id)) || (await db.getTaskByKey(id));
     if (!existing) {
       throw new NotFoundError('Task', id);
     }
 
     // Project change check
     if (dto.projectId && dto.projectId !== existing.projectId) {
-      const project = db.getProjectById(dto.projectId) || db.getProjectByKey(dto.projectId);
+      const project = (await db.getProjectById(dto.projectId)) || (await db.getProjectByKey(dto.projectId));
       if (!project) {
         throw new BadRequestError(`Project with ID '${dto.projectId}' does not exist`);
       }
@@ -253,7 +255,7 @@ export class TaskService {
 
     // Assignee check
     if (dto.assigneeId !== undefined && dto.assigneeId !== null && dto.assigneeId !== existing.assigneeId) {
-      const assignee = db.getUserById(dto.assigneeId);
+      const assignee = await db.getUserById(dto.assigneeId);
       if (!assignee) {
         throw new BadRequestError(`Assignee user with ID '${dto.assigneeId}' does not exist`);
       }
@@ -288,7 +290,7 @@ export class TaskService {
       }
     }
 
-    const updated = db.updateTask(existing.id, {
+    const updated = await db.updateTask(existing.id, {
       ...dto,
       statusHistory,
       completedAt,
@@ -300,8 +302,8 @@ export class TaskService {
     return updated;
   }
 
-  public static updateTaskStatus(id: string, dto: UpdateTaskStatusDto): Task {
-    const existing = db.getTaskById(id) || db.getTaskByKey(id);
+  public static async updateTaskStatus(id: string, dto: UpdateTaskStatusDto): Promise<Task> {
+    const existing = (await db.getTaskById(id)) || (await db.getTaskByKey(id));
     if (!existing) {
       throw new NotFoundError('Task', id);
     }
@@ -331,9 +333,9 @@ export class TaskService {
       completedAt = now;
       // Increment user completed story points if assignee exists
       if (existing.assigneeId) {
-        const user = db.getUserById(existing.assigneeId);
+        const user = await db.getUserById(existing.assigneeId);
         if (user) {
-          db.updateUser(user.id, {
+          await db.updateUser(user.id, {
             storyPointsCompleted: (user.storyPointsCompleted || 0) + existing.storyPoints,
             xpPoints: (user.xpPoints || 0) + existing.storyPoints * 20,
           });
@@ -343,16 +345,16 @@ export class TaskService {
       completedAt = null;
       // Decrement user completed story points if moved out of done
       if (existing.assigneeId) {
-        const user = db.getUserById(existing.assigneeId);
+        const user = await db.getUserById(existing.assigneeId);
         if (user) {
-          db.updateUser(user.id, {
+          await db.updateUser(user.id, {
             storyPointsCompleted: Math.max(0, (user.storyPointsCompleted || 0) - existing.storyPoints),
           });
         }
       }
     }
 
-    const updated = db.updateTask(existing.id, {
+    const updated = await db.updateTask(existing.id, {
       status: targetStatus,
       completedAt,
       statusHistory: [...existing.statusHistory, historyEntry],
@@ -364,7 +366,7 @@ export class TaskService {
     return updated;
   }
 
-  public static bulkUpdateTaskStatus(dto: BulkUpdateTaskStatusDto) {
+  public static async bulkUpdateTaskStatus(dto: BulkUpdateTaskStatusDto) {
     const { taskIds, status, changedBy, note } = dto;
     const targetStatus = status.toLowerCase().trim() as TaskStatus;
 
@@ -379,7 +381,7 @@ export class TaskService {
 
     for (const id of taskIds) {
       try {
-        const updated = this.updateTaskStatus(id, { status: targetStatus, changedBy, note });
+        const updated = await this.updateTaskStatus(id, { status: targetStatus, changedBy, note });
         updatedTasks.push(updated);
       } catch (err: any) {
         if (err instanceof NotFoundError) {
@@ -397,13 +399,13 @@ export class TaskService {
     };
   }
 
-  public static deleteTask(id: string): { success: boolean; message: string } {
-    const existing = db.getTaskById(id) || db.getTaskByKey(id);
+  public static async deleteTask(id: string): Promise<{ success: boolean; message: string }> {
+    const existing = (await db.getTaskById(id)) || (await db.getTaskByKey(id));
     if (!existing) {
       throw new NotFoundError('Task', id);
     }
 
-    const deleted = db.deleteTask(existing.id);
+    const deleted = await db.deleteTask(existing.id);
     if (!deleted) {
       throw new BadRequestError('Failed to delete task');
     }

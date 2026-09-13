@@ -3,6 +3,7 @@ import { openApiSpec } from '../docs/openapi.ts';
 import { renderSwaggerHtml } from '../docs/swaggerHtml.ts';
 import { db } from '../data/store.ts';
 import { config } from '../config/index.ts';
+import { getDatabaseHealth } from '../config/database.ts';
 
 export class DocsController {
   public static async getSwaggerUi(req: Request, res: Response, next: NextFunction) {
@@ -25,9 +26,10 @@ export class DocsController {
 
   public static async getHealthCheck(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = db.getUsers();
-      const projects = db.getProjects();
-      const tasks = db.getTasks();
+      const users = await db.getUsers();
+      const projects = await db.getProjects();
+      const tasks = await db.getTasks();
+      const dbHealth = await getDatabaseHealth();
 
       res.status(200).json({
         success: true,
@@ -39,6 +41,7 @@ export class DocsController {
           environment: config.nodeEnv,
           timestamp: new Date().toISOString(),
           database: {
+            ...dbHealth,
             usersCount: users.length,
             projectsCount: projects.length,
             tasksCount: tasks.length,

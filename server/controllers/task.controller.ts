@@ -21,7 +21,7 @@ export class TaskController {
         sortOrder,
       } = req.query;
 
-      const result = TaskService.getAllTasks({
+      const result = await TaskService.getAllTasks({
         search: search as string,
         projectId: projectId as string,
         assigneeId: assigneeId as string,
@@ -54,7 +54,7 @@ export class TaskController {
   public static async getTaskById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const task = TaskService.getTaskById(id);
+      const task = await TaskService.getTaskById(id);
 
       const response: ApiResponse = {
         success: true,
@@ -71,7 +71,7 @@ export class TaskController {
 
   public static async createTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const createdTask = TaskService.createTask(req.body);
+      const createdTask = await TaskService.createTask(req.body);
 
       const response: ApiResponse = {
         success: true,
@@ -90,7 +90,7 @@ export class TaskController {
   public static async updateTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const updatedTask = TaskService.updateTask(id, req.body);
+      const updatedTask = await TaskService.updateTask(id, req.body);
 
       const response: ApiResponse = {
         success: true,
@@ -111,7 +111,7 @@ export class TaskController {
       const { id } = req.params;
       const { status, changedBy, note } = req.body;
 
-      const updatedTask = TaskService.updateTaskStatus(id, {
+      const updatedTask = await TaskService.updateTaskStatus(id, {
         status,
         changedBy,
         note,
@@ -135,7 +135,7 @@ export class TaskController {
     try {
       const { taskIds, status, changedBy, note } = req.body;
 
-      const result = TaskService.bulkUpdateTaskStatus({
+      const result = await TaskService.bulkUpdateTaskStatus({
         taskIds,
         status,
         changedBy,
@@ -159,7 +159,7 @@ export class TaskController {
   public static async deleteTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const result = TaskService.deleteTask(id);
+      const result = await TaskService.deleteTask(id);
 
       const response: ApiResponse = {
         success: true,

@@ -11,7 +11,7 @@
       "status": "In the Zone",
       "statusColor": "#10b981",
       "streakDays": 42,
-      "storyPointsCompleted": 192,
+      "storyPointsCompleted": 187,
       "totalCommitsToday": 14,
       "prMergeRate": 96,
       "velocityScore": 98,
@@ -31,7 +31,7 @@
       "xpPoints": 4980,
       "level": 18,
       "createdAt": "2025-01-10T08:00:00.000Z",
-      "updatedAt": "2026-09-04T04:05:13.343Z"
+      "updatedAt": "2026-09-13T07:57:35.063Z"
     },
     {
       "id": "user-2",
@@ -262,7 +262,7 @@
       "assigneeId": "user-1",
       "reporterId": "user-2",
       "type": "Story",
-      "status": "in-review",
+      "status": "in-progress",
       "priority": "High",
       "storyPoints": 5,
       "estimatedHours": 8,
@@ -293,17 +293,10 @@
           "changedAt": "2026-09-02T14:30:00.000Z",
           "changedBy": "user-1",
           "note": "Started implementation with React 19 useOptimistic hook"
-        },
-        {
-          "fromStatus": "in-progress",
-          "toStatus": "in-review",
-          "changedAt": "2026-09-04T04:05:13.367Z",
-          "changedBy": "user-1",
-          "note": "Sprint batch review transition"
         }
       ],
       "createdAt": "2026-09-01T10:00:00.000Z",
-      "updatedAt": "2026-09-04T04:05:13.367Z"
+      "updatedAt": "2026-09-02T14:30:00.000Z"
     },
     {
       "id": "task-102",
@@ -314,7 +307,7 @@
       "assigneeId": "user-1",
       "reporterId": "user-4",
       "type": "Task",
-      "status": "in-review",
+      "status": "in-progress",
       "priority": "Critical",
       "storyPoints": 8,
       "estimatedHours": 12,
@@ -352,10 +345,17 @@
           "changedAt": "2026-09-04T08:00:00.000Z",
           "changedBy": "user-1",
           "note": "PR opened and ready for review"
+        },
+        {
+          "fromStatus": "in-review",
+          "toStatus": "in-progress",
+          "changedAt": "2026-09-13T07:57:35.062Z",
+          "changedBy": "user-1",
+          "note": "Sprint batch move"
         }
       ],
       "createdAt": "2026-09-01T11:00:00.000Z",
-      "updatedAt": "2026-09-04T08:00:00.000Z"
+      "updatedAt": "2026-09-13T07:57:35.062Z"
     },
     {
       "id": "task-103",
@@ -366,7 +366,7 @@
       "assigneeId": "user-1",
       "reporterId": "user-1",
       "type": "Story",
-      "status": "done",
+      "status": "in-progress",
       "priority": "Medium",
       "storyPoints": 5,
       "estimatedHours": 6,
@@ -381,7 +381,7 @@
       "epicColor": "#8b5cf6",
       "linkedPR": "PR #152",
       "dueDate": "2026-09-04",
-      "completedAt": "2026-09-04T07:30:00.000Z",
+      "completedAt": null,
       "statusHistory": [
         {
           "fromStatus": null,
@@ -403,10 +403,17 @@
           "changedAt": "2026-09-04T07:30:00.000Z",
           "changedBy": "user-1",
           "note": "Swagger UI live and working"
+        },
+        {
+          "fromStatus": "done",
+          "toStatus": "in-progress",
+          "changedAt": "2026-09-13T07:57:35.063Z",
+          "changedBy": "user-1",
+          "note": "Sprint batch move"
         }
       ],
       "createdAt": "2026-09-02T10:00:00.000Z",
-      "updatedAt": "2026-09-04T07:30:00.000Z"
+      "updatedAt": "2026-09-13T07:57:35.064Z"
     },
     {
       "id": "task-104",
@@ -459,7 +466,7 @@
       "assigneeId": "user-2",
       "reporterId": "user-4",
       "type": "Bug",
-      "status": "in-review",
+      "status": "todo",
       "priority": "Critical",
       "storyPoints": 5,
       "estimatedHours": 8,
@@ -481,17 +488,10 @@
           "toStatus": "todo",
           "changedAt": "2026-09-03T11:00:00.000Z",
           "changedBy": "user-4"
-        },
-        {
-          "fromStatus": "todo",
-          "toStatus": "in-review",
-          "changedAt": "2026-09-04T04:05:13.369Z",
-          "changedBy": "user-1",
-          "note": "Sprint batch review transition"
         }
       ],
       "createdAt": "2026-09-03T11:00:00.000Z",
-      "updatedAt": "2026-09-04T04:05:13.369Z"
+      "updatedAt": "2026-09-03T11:00:00.000Z"
     },
     {
       "id": "task-106",
@@ -529,5 +529,5 @@
     }
   ],
   "version": "1.0.0",
-  "lastUpdated": "2026-09-04T04:05:13.376Z"
+  "lastUpdated": "2026-09-13T07:57:35.108Z"
 }

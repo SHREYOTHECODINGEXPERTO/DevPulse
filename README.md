@@ -13,21 +13,23 @@
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-v4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-6.2.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0.3-6BA539?style=for-the-badge&logo=openapiinitiative&logoColor=white)](http://localhost:5000/api/docs)
-[![Tests](https://img.shields.io/badge/Tests-82%20Passed-10B981?style=for-the-badge&logo=jest&logoColor=white)](http://localhost:5000/api/health)
+[![Tests](https://img.shields.io/badge/Tests-92%20Passed-10B981?style=for-the-badge&logo=jest&logoColor=white)](http://localhost:5000/api/health)
 
 ---
 
 ### 🌐 Live Production & Deployment Links
 
-| Resource | Live Link | Description |
-| :--- | :--- | :--- |
-| 🚀 **Production Web App** | [devpulse-dashboard-two.vercel.app](https://devpulse-dashboard-two.vercel.app) | Live deployed full frontend dashboard on Vercel |
-| 🔍 **Vercel Inspection URL** | [Vercel Deployment Inspector](https://vercel.com/shreya-kar/devpulse-dashboard/5CpFK5H5ssRsJ9m4iU9PYNnxxQGk) | Real-time deployment status & edge logs |
-| 🐙 **GitHub Repository** | [github.com/SHREYOTHECODINGEXPERTO/DevPulse](https://github.com/SHREYOTHECODINGEXPERTO/DevPulse) | Source code repository |
-| 📚 **Interactive Swagger UI** | [`http://localhost:5000/api/docs`](http://localhost:5000/api/docs) | Interactive API sandbox & endpoint tester |
-| 📄 **OpenAPI 3.0.3 Spec** | [`http://localhost:5000/api/openapi.json`](http://localhost:5000/api/openapi.json) | Machine-readable API schema definition |
-| 💚 **API Health Check** | [`http://localhost:5000/api/health`](http://localhost:5000/api/health) | Live server status, uptime & DB metrics |
-| 💻 **Local Frontend App** | [`http://localhost:3000`](http://localhost:3000) | Local development dashboard server |
+| Resource | Live Production Link (Vercel) | Local Development Link | Description |
+| :--- | :--- | :--- | :--- |
+| 🚀 **Web App Dashboard** | [devpulse-dashboard-two.vercel.app](https://devpulse-dashboard-two.vercel.app) | [`http://localhost:3000`](http://localhost:3000) | Live frontend developer dashboard |
+| 📚 **Interactive Swagger UI** | [Live Swagger Docs](https://devpulse-dashboard-two.vercel.app/api/docs) | [`http://localhost:5000/api/docs`](http://localhost:5000/api/docs) | Live API sandbox & interactive documentation |
+| 📄 **OpenAPI 3.0.3 Spec** | [Live OpenAPI Spec](https://devpulse-dashboard-two.vercel.app/api/openapi.json) | [`http://localhost:5000/api/openapi.json`](http://localhost:5000/api/openapi.json) | OpenAPI 3.0.3 schema specification |
+| 💚 **API Health & DB Telemetry** | [Live Health Check](https://devpulse-dashboard-two.vercel.app/api/health) | [`http://localhost:5000/api/health`](http://localhost:5000/api/health) | Live server uptime & database metrics |
+| 👥 **Users API Endpoint** | [Live Users API](https://devpulse-dashboard-two.vercel.app/api/users) | [`http://localhost:5000/api/users`](http://localhost:5000/api/users) | REST API user management & stats |
+| 📁 **Projects API Endpoint** | [Live Projects API](https://devpulse-dashboard-two.vercel.app/api/projects) | [`http://localhost:5000/api/projects`](http://localhost:5000/api/projects) | REST API workspace projects |
+| 📋 **Tasks API Endpoint** | [Live Tasks API](https://devpulse-dashboard-two.vercel.app/api/tasks) | [`http://localhost:5000/api/tasks`](http://localhost:5000/api/tasks) | REST API Kanban tasks & lifecycle |
+| 🔍 **Vercel Inspection URL** | [Vercel Deployment Inspector](https://vercel.com/shreya-kar/devpulse-dashboard/5CpFK5H5ssRsJ9m4iU9PYNnxxQGk) | — | Real-time deployment status & edge logs |
+| 🐙 **GitHub Repository** | [github.com/SHREYOTHECODINGEXPERTO/DevPulse](https://github.com/SHREYOTHECODINGEXPERTO/DevPulse) | — | Full source code repository |
 
 ---
 

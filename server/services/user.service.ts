@@ -14,8 +14,8 @@ export interface UserFilterOptions {
 }
 
 export class UserService {
-  public static getAllUsers(options: UserFilterOptions = {}) {
-    let users = db.getUsers();
+  public static async getAllUsers(options: UserFilterOptions = {}) {
+    let users = await db.getUsers();
 
     // Filter by search query (name, handle, bio, skills)
     if (options.search) {
@@ -25,27 +25,27 @@ export class UserService {
           u.name.toLowerCase().includes(q) ||
           u.handle.toLowerCase().includes(q) ||
           u.email.toLowerCase().includes(q) ||
-          u.bio.toLowerCase().includes(q) ||
-          u.skills.some((s) => s.toLowerCase().includes(q))
+          (u.bio && u.bio.toLowerCase().includes(q)) ||
+          (u.skills && u.skills.some((s) => s.toLowerCase().includes(q)))
       );
     }
 
     // Filter by role
     if (options.role) {
       const roleQuery = options.role.toLowerCase().trim();
-      users = users.filter((u) => u.role.toLowerCase().includes(roleQuery));
+      users = users.filter((u) => u.role && u.role.toLowerCase().includes(roleQuery));
     }
 
     // Filter by team
     if (options.team) {
       const teamQuery = options.team.toLowerCase().trim();
-      users = users.filter((u) => u.team.toLowerCase().includes(teamQuery));
+      users = users.filter((u) => u.team && u.team.toLowerCase().includes(teamQuery));
     }
 
     // Filter by status
     if (options.status) {
       const statusQuery = options.status.toLowerCase().trim();
-      users = users.filter((u) => u.status.toLowerCase() === statusQuery);
+      users = users.filter((u) => u.status && u.status.toLowerCase() === statusQuery);
     }
 
     // Sorting
@@ -83,23 +83,23 @@ export class UserService {
     };
   }
 
-  public static getUserById(id: string): User {
-    const user = db.getUserById(id);
+  public static async getUserById(id: string): Promise<User> {
+    const user = await db.getUserById(id);
     if (!user) {
       throw new NotFoundError('User', id);
     }
     return user;
   }
 
-  public static createUser(dto: CreateUserDto): User {
+  public static async createUser(dto: CreateUserDto): Promise<User> {
     // Check if email already exists
-    if (db.getUserByEmail(dto.email)) {
+    if (await db.getUserByEmail(dto.email)) {
       throw new ConflictError(`User with email '${dto.email}' already exists`);
     }
 
     // Check if handle already exists
     const normalizedHandle = dto.handle.startsWith('@') ? dto.handle : `@${dto.handle}`;
-    if (db.getUserByHandle(normalizedHandle)) {
+    if (await db.getUserByHandle(normalizedHandle)) {
       throw new ConflictError(`User with handle '${normalizedHandle}' already exists`);
     }
 
@@ -131,18 +131,19 @@ export class UserService {
       updatedAt: now,
     };
 
-    return db.createUser(newUser);
+    return await db.createUser(newUser);
   }
 
-  public static updateUser(id: string, dto: UpdateUserDto): User {
-    const existing = db.getUserById(id);
+  public static async updateUser(id: string, dto: UpdateUserDto): Promise<User> {
+    const existing = await db.getUserById(id);
     if (!existing) {
       throw new NotFoundError('User', id);
     }
 
     // If changing email, ensure no duplicate
     if (dto.email && dto.email.toLowerCase().trim() !== existing.email.toLowerCase()) {
-      if (db.getUserByEmail(dto.email)) {
+      const conflict = await db.getUserByEmail(dto.email);
+      if (conflict && conflict.id !== id) {
         throw new ConflictError(`User with email '${dto.email}' already exists`);
       }
     }
@@ -151,27 +152,28 @@ export class UserService {
     if (dto.handle) {
       const normalizedHandle = dto.handle.startsWith('@') ? dto.handle : `@${dto.handle}`;
       if (normalizedHandle.toLowerCase() !== existing.handle.toLowerCase()) {
-        if (db.getUserByHandle(normalizedHandle)) {
+        const conflict = await db.getUserByHandle(normalizedHandle);
+        if (conflict && conflict.id !== id) {
           throw new ConflictError(`User with handle '${normalizedHandle}' already exists`);
         }
       }
       dto.handle = normalizedHandle;
     }
 
-    const updated = db.updateUser(id, dto);
+    const updated = await db.updateUser(id, dto);
     if (!updated) {
       throw new NotFoundError('User', id);
     }
     return updated;
   }
 
-  public static deleteUser(id: string): { success: boolean; message: string } {
-    const existing = db.getUserById(id);
+  public static async deleteUser(id: string): Promise<{ success: boolean; message: string }> {
+    const existing = await db.getUserById(id);
     if (!existing) {
       throw new NotFoundError('User', id);
     }
 
-    const deleted = db.deleteUser(id);
+    const deleted = await db.deleteUser(id);
     if (!deleted) {
       throw new BadRequestError('Failed to delete user');
     }
@@ -182,14 +184,14 @@ export class UserService {
     };
   }
 
-  public static getUserTasks(id: string): Task[] {
-    this.getUserById(id); // Throws if not found
-    return db.getTasksByAssigneeId(id);
+  public static async getUserTasks(id: string): Promise<Task[]> {
+    await this.getUserById(id); // Throws if not found
+    return await db.getTasksByAssigneeId(id);
   }
 
-  public static getUserStats(id: string) {
-    const user = this.getUserById(id);
-    const tasks = db.getTasksByAssigneeId(id);
+  public static async getUserStats(id: string) {
+    const user = await this.getUserById(id);
+    const tasks = await db.getTasksByAssigneeId(id);
 
     const tasksByStatus = {
       backlog: tasks.filter((t) => t.status === 'backlog').length,

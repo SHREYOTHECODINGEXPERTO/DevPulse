@@ -6,7 +6,7 @@ export class ProjectController {
   public static async getAllProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const { search, status, ownerId, language, page, limit, sortBy, sortOrder } = req.query;
-      const result = ProjectService.getAllProjects({
+      const result = await ProjectService.getAllProjects({
         search: search as string,
         status: status as string,
         ownerId: ownerId as string,
@@ -34,7 +34,7 @@ export class ProjectController {
   public static async getProjectById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const project = ProjectService.getProjectById(id);
+      const project = await ProjectService.getProjectById(id);
 
       const response: ApiResponse = {
         success: true,
@@ -51,7 +51,7 @@ export class ProjectController {
 
   public static async createProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const createdProject = ProjectService.createProject(req.body);
+      const createdProject = await ProjectService.createProject(req.body);
 
       const response: ApiResponse = {
         success: true,
@@ -70,7 +70,7 @@ export class ProjectController {
   public static async updateProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const updatedProject = ProjectService.updateProject(id, req.body);
+      const updatedProject = await ProjectService.updateProject(id, req.body);
 
       const response: ApiResponse = {
         success: true,
@@ -89,7 +89,7 @@ export class ProjectController {
   public static async deleteProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const result = ProjectService.deleteProject(id);
+      const result = await ProjectService.deleteProject(id);
 
       const response: ApiResponse = {
         success: true,
@@ -108,7 +108,7 @@ export class ProjectController {
     try {
       const { id } = req.params;
       const { status } = req.query;
-      const tasks = ProjectService.getProjectTasks(id, status as string);
+      const tasks = await ProjectService.getProjectTasks(id, status as string);
 
       const response: ApiResponse = {
         success: true,
@@ -129,7 +129,7 @@ export class ProjectController {
   public static async getProjectMembers(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const members = ProjectService.getProjectMembers(id);
+      const members = await ProjectService.getProjectMembers(id);
 
       const response: ApiResponse = {
         success: true,

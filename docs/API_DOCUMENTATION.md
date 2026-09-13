@@ -4,26 +4,36 @@ A production-grade RESTful API built in Node.js, Express, and TypeScript powerin
 
 ---
 
+## 🌐 Live Production API & Documentation Links
+
+| Resource | Live Production URL (Vercel) | Local Development URL | Description |
+| :--- | :--- | :--- | :--- |
+| 📚 **Interactive Swagger UI** | [Live Swagger Docs](https://devpulse-dashboard-two.vercel.app/api/docs) | [`http://localhost:5000/api/docs`](http://localhost:5000/api/docs) | Interactive endpoint tester & API sandbox |
+| 📄 **OpenAPI 3.0.3 Spec** | [Live OpenAPI Spec](https://devpulse-dashboard-two.vercel.app/api/openapi.json) | [`http://localhost:5000/api/openapi.json`](http://localhost:5000/api/openapi.json) | Raw OpenAPI schema definition |
+| 💚 **Health Check & Telemetry**| [Live Health Endpoint](https://devpulse-dashboard-two.vercel.app/api/health) | [`http://localhost:5000/api/health`](http://localhost:5000/api/health) | Live DB status, pool size & uptime |
+| 👥 **Users Endpoint** | [Live Users API](https://devpulse-dashboard-two.vercel.app/api/users) | [`http://localhost:5000/api/users`](http://localhost:5000/api/users) | User management & productivity stats |
+| 📁 **Projects Endpoint** | [Live Projects API](https://devpulse-dashboard-two.vercel.app/api/projects) | [`http://localhost:5000/api/projects`](http://localhost:5000/api/projects) | Workspace project management |
+| 📋 **Tasks Endpoint** | [Live Tasks API](https://devpulse-dashboard-two.vercel.app/api/tasks) | [`http://localhost:5000/api/tasks`](http://localhost:5000/api/tasks) | Kanban task lifecycle & transitions |
+
+---
+
 ## 🚀 Quick Start
 
-### 1. Start the API Server
+### 1. Start the API Server Locally
 ```bash
 npm run server
 ```
 Server runs at `http://localhost:5000` with the API root mounted at `/api`.
 
 ### 2. Live Interactive Swagger UI
-Open your browser to:
-```
-http://localhost:5000/api/docs
-```
+- Production: `https://devpulse-dashboard-two.vercel.app/api/docs`
+- Local: `http://localhost:5000/api/docs`
+
 Interactive Swagger documentation allows testing all endpoints, query parameters, schemas, and live executions with one click.
 
 ### 3. OpenAPI 3.0 Specification
-Raw JSON specification is available at:
-```
-http://localhost:5000/api/openapi.json
-```
+- Production: `https://devpulse-dashboard-two.vercel.app/api/openapi.json`
+- Local: `http://localhost:5000/api/openapi.json`
 
 ### 4. Run Automated Test Suite
 ```bash

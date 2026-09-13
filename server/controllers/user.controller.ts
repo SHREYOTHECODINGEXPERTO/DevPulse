@@ -6,7 +6,7 @@ export class UserController {
   public static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
       const { search, role, team, status, page, limit, sortBy, sortOrder } = req.query;
-      const result = UserService.getAllUsers({
+      const result = await UserService.getAllUsers({
         search: search as string,
         role: role as string,
         team: team as string,
@@ -34,7 +34,7 @@ export class UserController {
   public static async getUserById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const user = UserService.getUserById(id);
+      const user = await UserService.getUserById(id);
 
       const response: ApiResponse = {
         success: true,
@@ -51,7 +51,7 @@ export class UserController {
 
   public static async createUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const createdUser = UserService.createUser(req.body);
+      const createdUser = await UserService.createUser(req.body);
 
       const response: ApiResponse = {
         success: true,
@@ -70,7 +70,7 @@ export class UserController {
   public static async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const updatedUser = UserService.updateUser(id, req.body);
+      const updatedUser = await UserService.updateUser(id, req.body);
 
       const response: ApiResponse = {
         success: true,
@@ -89,7 +89,7 @@ export class UserController {
   public static async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const result = UserService.deleteUser(id);
+      const result = await UserService.deleteUser(id);
 
       const response: ApiResponse = {
         success: true,
@@ -107,7 +107,7 @@ export class UserController {
   public static async getUserStats(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const stats = UserService.getUserStats(id);
+      const stats = await UserService.getUserStats(id);
 
       const response: ApiResponse = {
         success: true,
@@ -125,7 +125,7 @@ export class UserController {
   public static async getUserTasks(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const tasks = UserService.getUserTasks(id);
+      const tasks = await UserService.getUserTasks(id);
 
       const response: ApiResponse = {
         success: true,

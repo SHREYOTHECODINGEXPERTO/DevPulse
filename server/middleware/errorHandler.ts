@@ -70,7 +70,7 @@ export function notFoundHandler(req: Request, res: Response, next: NextFunction)
 }
 
 export function errorHandler(
-  err: Error | ApiError,
+  err: any,
   req: Request,
   res: Response,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -93,8 +93,58 @@ export function errorHandler(
     return res.status(err.statusCode).json(responseBody);
   }
 
+  // Handle Mongoose Schema ValidationError
+  if (err.name === 'ValidationError') {
+    const details = Object.keys(err.errors || {}).map((field) => ({
+      field,
+      message: err.errors[field]?.message || 'Invalid value',
+      value: err.errors[field]?.value,
+    }));
+    const responseBody: ApiResponse = {
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: err.message || 'Database schema validation failed',
+        details,
+      },
+      timestamp,
+      path,
+    };
+    return res.status(400).json(responseBody);
+  }
+
+  // Handle MongoDB E11000 duplicate key error
+  if (err.code === 11000 || (err.name === 'MongoServerError' && err.code === 11000)) {
+    const field = Object.keys(err.keyPattern || err.keyValue || {})[0] || 'field';
+    const value = err.keyValue ? err.keyValue[field] : undefined;
+    const responseBody: ApiResponse = {
+      success: false,
+      error: {
+        code: 'CONFLICT',
+        message: `Resource with duplicate unique ${field} '${value || ''}' already exists`,
+      },
+      timestamp,
+      path,
+    };
+    return res.status(409).json(responseBody);
+  }
+
+  // Handle Mongoose CastError (e.g. invalid ObjectId format)
+  if (err.name === 'CastError') {
+    const responseBody: ApiResponse = {
+      success: false,
+      error: {
+        code: 'BAD_REQUEST',
+        message: `Invalid format for field '${err.path}': value '${err.value}' could not be parsed`,
+      },
+      timestamp,
+      path,
+    };
+    return res.status(400).json(responseBody);
+  }
+
   // Handle standard JSON syntax errors from express.json()
-  if ('type' in err && (err as any).type === 'entity.parse.failed') {
+  if ('type' in err && err.type === 'entity.parse.failed') {
     const responseBody: ApiResponse = {
       success: false,
       error: {
