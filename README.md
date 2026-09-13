@@ -3,17 +3,18 @@
 # ⚡ DevPulse — Ultimate Developer Productivity & Telemetry Platform
 
 <p align="center">
-  <strong>Real-Time Hardware & VCS Telemetry • Interactive Jira-Style Kanban • Full-Stack REST API Backend</strong>
+  <strong>Real-Time Hardware & VCS Telemetry • Interactive Jira-Style Kanban • Full-Stack REST API Backend • Persistent MongoDB Layer</strong>
 </p>
 
 [![React](https://img.shields.io/badge/React-19.0.1-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-4.21.2-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose_9.1-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongoosejs.com/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-v4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-6.2.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0.3-6BA539?style=for-the-badge&logo=openapiinitiative&logoColor=white)](http://localhost:5000/api/docs)
-[![Tests](https://img.shields.io/badge/Tests-92%20Passed-10B981?style=for-the-badge&logo=jest&logoColor=white)](http://localhost:5000/api/health)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0.3-6BA539?style=for-the-badge&logo=openapiinitiative&logoColor=white)](https://devpulse-dashboard-two.vercel.app/api/docs)
+[![Tests](https://img.shields.io/badge/Tests-92%20Passed-10B981?style=for-the-badge&logo=jest&logoColor=white)](https://devpulse-dashboard-two.vercel.app/api/health)
 
 ---
 
@@ -24,7 +25,7 @@
 | 🚀 **Web App Dashboard** | [devpulse-dashboard-two.vercel.app](https://devpulse-dashboard-two.vercel.app) | [`http://localhost:3000`](http://localhost:3000) | Live frontend developer dashboard |
 | 📚 **Interactive Swagger UI** | [Live Swagger Docs](https://devpulse-dashboard-two.vercel.app/api/docs) | [`http://localhost:5000/api/docs`](http://localhost:5000/api/docs) | Live API sandbox & interactive documentation |
 | 📄 **OpenAPI 3.0.3 Spec** | [Live OpenAPI Spec](https://devpulse-dashboard-two.vercel.app/api/openapi.json) | [`http://localhost:5000/api/openapi.json`](http://localhost:5000/api/openapi.json) | OpenAPI 3.0.3 schema specification |
-| 💚 **API Health & DB Telemetry** | [Live Health Check](https://devpulse-dashboard-two.vercel.app/api/health) | [`http://localhost:5000/api/health`](http://localhost:5000/api/health) | Live server uptime & database metrics |
+| 💚 **API Health & DB Telemetry** | [Live Health Check](https://devpulse-dashboard-two.vercel.app/api/health) | [`http://localhost:5000/api/health`](http://localhost:5000/api/health) | Live server uptime, DB status & metrics |
 | 👥 **Users API Endpoint** | [Live Users API](https://devpulse-dashboard-two.vercel.app/api/users) | [`http://localhost:5000/api/users`](http://localhost:5000/api/users) | REST API user management & stats |
 | 📁 **Projects API Endpoint** | [Live Projects API](https://devpulse-dashboard-two.vercel.app/api/projects) | [`http://localhost:5000/api/projects`](http://localhost:5000/api/projects) | REST API workspace projects |
 | 📋 **Tasks API Endpoint** | [Live Tasks API](https://devpulse-dashboard-two.vercel.app/api/tasks) | [`http://localhost:5000/api/tasks`](http://localhost:5000/api/tasks) | REST API Kanban tasks & lifecycle |
@@ -40,12 +41,14 @@
 - [Overview](#-overview)
 - [Key Features](#-key-features)
 - [System Architecture](#-system-architecture)
+- [Persistent Data Layer & Schemas](#-persistent-data-layer--schemas)
 - [Real-Time Telemetry & Hardware Engine](#-real-time-telemetry--hardware-engine)
 - [REST API Reference](#-rest-api-reference)
   - [Users API](#1-users-api-apiusers)
   - [Projects API](#2-projects-api-apiprojects)
   - [Tasks & Status Lifecycle API](#3-tasks--status-lifecycle-api-apitasks)
 - [Environment Configuration](#-environment-configuration)
+- [Vercel Serverless Deployment](#-vercel-serverless-deployment)
 - [Getting Started](#-getting-started)
 - [Automated Testing](#-automated-testing)
 - [Postman Collection](#-postman-collection)
@@ -57,7 +60,7 @@
 
 **DevPulse** is a developer productivity platform engineered to give developers real-time observability over their coding rhythm, hardware performance, GitHub activity, and sprint delivery.
 
-It pairs a **high-performance React 19 frontend** with a modular **Node.js/Express TypeScript REST API backend**, providing full CRUD operations, status management, schema validation, telemetry metrics, and interactive documentation.
+It pairs a **high-performance React 19 frontend** with a modular **Node.js/Express TypeScript REST API backend** and a **persistent Mongoose/MongoDB data layer**, providing full CRUD operations, status state-machine transitions, strict database-level validation, telemetry metrics, and interactive OpenAPI documentation.
 
 ---
 
@@ -71,7 +74,7 @@ It pairs a **high-performance React 19 frontend** with a modular **Node.js/Expre
 - **Active Coding Tracker**: Monitors keystrokes, mouse moves, and window focus to track active coding minutes and idle states.
 
 ### 📋 2. Interactive Jira-Style Kanban Task Board
-- **Dedicated Status Transitions**: `backlog` ➔ `todo` ➔ `in-progress` ➔ `in-review` ➔ `done`.
+- **Dedicated Status Transitions**: `backlog` ➔ `todo` ➔ `in-progress` ➔ `in-review` ➔ `done` with full history audit trail.
 - **Task Metadata**: Story points, estimated vs. actual hours spent, priorities (`Low`, `Medium`, `High`, `Critical`), issue types (`Story`, `Bug`, `Task`, `Epic`, `Refactor`), sprint tags, and linked PRs.
 - **Automated Telemetry Sync**: Marking a task as `done` automatically logs completion timestamps and credits developer story points & XP in real-time.
 
@@ -88,23 +91,63 @@ It pairs a **high-performance React 19 frontend** with a modular **Node.js/Expre
 ## 🏗️ System Architecture
 
 ```
-                                  ┌─────────────────────────────┐
-                                  │   DevPulse React 19 Client  │
-                                  │   (Vite Dev on Port 3000)   │
-                                  └──────────────┬──────────────┘
-                                                 │
-                                                 │ Vite Proxy (/api)
-                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 DevPulse React 19 Client                                │
+│                       (Vite Frontend on Port 3000 / Vercel Edge)                        │
+└────────────────────────────────────────────┬────────────────────────────────────────────┘
+                                             │ REST API / JSON
+                                             ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │                           Node.js + Express REST API (Port 5000)                        │
 ├───────────────────┬───────────────────┬───────────────────┬─────────────────────────────┤
 │   Users Service   │  Projects Service │   Tasks Service   │   Docs & OpenAPI Generator  │
 ├───────────────────┴───────────────────┴───────────────────┴─────────────────────────────┤
 │ • Declarative Schema Validation Middleware                                              │
-│ • Custom ApiError Centralized Error Handler (400, 401, 404, 409, 422, 500)              │
-│ • Persistent In-Memory + Atomic JSON Store (server/data/db.json)                        │
-└─────────────────────────────────────────────────────────────────────────────────────────┘
+│ • Centralized Error Handler (400, 401, 404, 409, 422, 500)                              │
+│ • Secure Database Configuration with URI Secret Masking                                 │
+└────────────────────────────────────────────┬────────────────────────────────────────────┘
+                                             │ Mongoose ORM / ODM
+                                             ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                Persistent Database Layer                                │
+├────────────────────────────────────────────┬────────────────────────────────────────────┤
+│         Primary: MongoDB Database          │    Resilient Fallback: Document Store      │
+│  (Atlas / Local MongoDB with Pool Size)    │      (server/data/db.json with Schema)     │
+└────────────────────────────────────────────┴────────────────────────────────────────────┘
 ```
+
+---
+
+## 🗄️ Persistent Data Layer & Schemas
+
+### 1. Database Configuration & Security
+- **Dynamic Configuration**: Credentials managed strictly via `.env` (`MONGODB_URI`, `DB_NAME`, `DB_MAX_POOL_SIZE`, `DB_MIN_POOL_SIZE`, `STORAGE_FILE`).
+- **Credential Masking**: Connection URIs containing sensitive passwords (`mongodb+srv://user:pass@host...`) are automatically masked in logs and health endpoints (`mongodb+srv://user:****@host...`).
+- **Connection Pooling & Health Telemetry**: Live connection state, pool size, and ping latency metrics exposed at `/api/health`.
+
+### 2. Schema Models & Database Validation
+- **User Entity (`server/models/user.model.ts`)**:
+  - Unique indexes on `email` and `handle`.
+  - Regex validation on handle (`/^@?[a-zA-Z0-9_-]+$/`) and email.
+  - Status enum enforcement (`'In the Zone'`, `'Reviewing Code'`, `'Pairing'`, `'In Sprint Planning'`, `'AFK'`, `'Vibecoding'`, `'Debugging at 3AM'`).
+  - Numerical range validation (`velocityScore` 0–100, `prMergeRate` 0–100, `streakDays` $\ge 0$).
+- **Project Entity (`server/models/project.model.ts`)**:
+  - Unique index and uppercase regex validation on project `key` (`/^[A-Z0-9]{2,10}$/`).
+  - Status enum enforcement (`'Active Sprint'`, `'In Progress'`, `'Completed'`, `'Maintained'`, `'Planning'`).
+  - Relational references to `User` for `ownerId` and `memberIds`.
+- **Task Entity (`server/models/task.model.ts`)**:
+  - Unique index on task `key` (e.g. `PULSE-101`).
+  - Enums for `status`, `priority`, and `type`.
+  - References to `Project` and `User` (`assigneeId`, `reporterId`).
+  - Embedded `StatusHistorySchema` subdocuments recording timestamped status transition logs.
+
+### 3. Relational Integrity & Cascading Deletions
+- **Project $\rightarrow$ Task Cascade**: Deleting a project automatically cascade-deletes all associated child tasks.
+- **User Cleanup**: Deleting a user unassigns their tasks (`assigneeId = null`) and pulls them from all project `memberIds`.
+- **Relational Aggregations**:
+  - `GET /api/projects/:id` resolves `owner` and `members` records and aggregates real-time `taskSummary` metrics.
+  - `GET /api/tasks/:id` resolves `project`, `assignee`, and `reporter` documents.
+  - `GET /api/users/:id/stats` calculates developer metrics, velocity score, and task breakdown.
 
 ---
 
@@ -125,7 +168,7 @@ It pairs a **high-performance React 19 frontend** with a modular **Node.js/Expre
 
 ## 📡 REST API Reference
 
-Base URL: `http://localhost:5000/api`
+Base URL: `http://localhost:5000/api` (or `https://devpulse-dashboard-two.vercel.app/api`)
 
 ### 1. Users API (`/api/users`)
 
@@ -134,9 +177,8 @@ Base URL: `http://localhost:5000/api`
 | `GET` | `/api/users` | List users with search, role, team, status filters, sorting & pagination |
 | `GET` | `/api/users/:id` | Get user profile by ID |
 | `POST` | `/api/users` | Create user (validates email format, unique handle/email) |
-| `PUT` | `/api/users/:id` | Full user replacement |
 | `PATCH`| `/api/users/:id` | Partial user update |
-| `DELETE`| `/api/users/:id` | Delete user and unassign active tasks |
+| `DELETE`| `/api/users/:id` | Delete user and unassign active tasks / remove from project memberships |
 | `GET` | `/api/users/:id/stats` | Get user productivity metrics, velocity score, and task summary |
 | `GET` | `/api/users/:id/tasks` | Get all tasks assigned to user |
 
@@ -147,9 +189,8 @@ Base URL: `http://localhost:5000/api`
 | `GET` | `/api/projects` | List projects with search, status, and language filters |
 | `GET` | `/api/projects/:id` | Get project with calculated sprint progress %, task breakdown & team members |
 | `POST` | `/api/projects` | Create project workspace (enforces unique project key e.g. `PULSE`) |
-| `PUT` | `/api/projects/:id` | Full project update |
 | `PATCH`| `/api/projects/:id` | Partial project update |
-| `DELETE`| `/api/projects/:id` | Delete project and cascade delete tasks |
+| `DELETE`| `/api/projects/:id` | Delete project and cascade delete all associated child tasks |
 | `GET` | `/api/projects/:id/tasks` | Get all tasks belonging to project |
 | `GET` | `/api/projects/:id/members` | Get all user members in project |
 
@@ -160,7 +201,6 @@ Base URL: `http://localhost:5000/api`
 | `GET` | `/api/tasks` | Multi-field filtering by `projectId`, `assigneeId`, `status`, `priority`, `type`, `sprint`, `tag`, `search` |
 | `GET` | `/api/tasks/:id` | Get task by ID (e.g. `task-101`) or Key (e.g. `PULSE-101`) with relations |
 | `POST` | `/api/tasks` | Create task with auto-generated project key prefix and history initialization |
-| `PUT` | `/api/tasks/:id` | Full task replacement |
 | `PATCH`| `/api/tasks/:id` | Partial task update |
 | `PATCH`| `/api/tasks/:id/status` | **Dedicated Status Transition** (`backlog` ➔ `todo` ➔ `in-progress` ➔ `in-review` ➔ `done`) with full audit trail in `statusHistory` |
 | `POST` | `/api/tasks/bulk-status` | Bulk update status for Kanban column moves or sprint batch transitions |
@@ -170,23 +210,34 @@ Base URL: `http://localhost:5000/api`
 
 ## ⚙️ Environment Configuration
 
-Create a `.env` file in the project root (reference [`.env.example`](file:///c:/Users/Shreya%20Kar/OneDrive/Desktop/DevPulse-main/.env.example)):
+Create a `.env` file in the project root (reference [`.env.example`](.env.example)):
 
 ```env
-# Server Port
+# Server Configuration
 PORT=5000
-
-# Environment Mode
 NODE_ENV=development
-
-# API Prefix
 API_PREFIX=/api
-
-# CORS Origin
 CORS_ORIGIN=http://localhost:3000
 
-# Persistent Database File
+# Persistent Database Configuration (MongoDB / Local Persistence)
+MONGODB_URI=mongodb://127.0.0.1:27017/devpulse
+DB_NAME=devpulse
+DB_MAX_POOL_SIZE=10
+DB_MIN_POOL_SIZE=2
 STORAGE_FILE=./server/data/db.json
+```
+
+---
+
+## 🚀 Vercel Serverless Deployment
+
+DevPulse is pre-configured for full-stack deployment on **Vercel**:
+- **`vercel.json`**: Rewrites all `/api/(.*)` routes to the serverless entrypoint.
+- **`api/index.ts`**: Mounts the Express REST API as a Vercel Serverless Function and initializes database connections.
+
+To deploy to Vercel:
+```bash
+vercel deploy --prod
 ```
 
 ---
@@ -217,18 +268,23 @@ npm run dev
 
 ## 🧪 Automated Testing
 
-DevPulse includes an automated E2E integration test suite covering **82 test assertions**:
-- User CRUD, validation, and duplicate conflict checks
-- Project creation, unique key collision, and metrics aggregation
-- Task CRUD, foreign key checks, and dedicated status lifecycle transitions
-- Centralized error response schemas (`400`, `404`, `409`, `422`, `500`)
+DevPulse includes an automated E2E integration test suite covering **92 test assertions across 6 categories**:
+1. Health & Database Telemetry Endpoints
+2. User Management & Schema Validation
+3. Project Management & Relational Modeling
+4. Task Lifecycle, Schema Constraints & Relations
+5. Cascading Deletions & Relational Cleanup
+6. Centralized Error Handling & Status Codes
 
 ```bash
-# Run API test suite
+# Run API & Database test suite
 npm run test:api
 
 # Run TypeScript typecheck
 npm run lint
+
+# Build production bundle
+npm run build
 ```
 
 ---
