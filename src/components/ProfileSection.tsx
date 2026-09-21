@@ -25,6 +25,9 @@ import {
 import { soundFx } from '../utils/audio';
 import { triggerCodeCelebration } from '../utils/celebration';
 import { FUNNY_STATUSES } from '../utils/memeAvatars';
+import { UserAvatar } from './UserAvatar';
+
+
 
 interface ProfileSectionProps {
   developer: Developer;
@@ -147,19 +150,18 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3.5">
               <div className="relative group cursor-pointer" onClick={onOpenLoginModal} title="Click to edit profile picture">
-                <img
-                  src={developer.avatar || fallbackGhAvatar}
-                  alt={developer.name}
-                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-cyan-500/40 shadow-lg shadow-cyan-500/20 bg-slate-900"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = fallbackGhAvatar;
-                  }}
+                <UserAvatar
+                  src={developer.avatar}
+                  name={developer.name}
+                  handle={developer.githubHandle || developer.handle}
+                  size="xl"
+                  shape="rounded"
+                  ringColor="ring-2 ring-cyan-500/40 shadow-lg shadow-cyan-500/20"
+                  showStatus={true}
+                  status={developer.status}
+                  statusColor="bg-emerald-400"
                 />
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-950 flex items-center justify-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                </span>
-                <div className="absolute inset-0 bg-slate-950/50 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <div className="absolute inset-0 bg-slate-950/60 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
                   <Edit2 className="w-4 h-4 text-cyan-300" />
                 </div>
               </div>

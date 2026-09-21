@@ -26,6 +26,7 @@ import {
 import { soundFx } from '../utils/audio';
 import { triggerCodeCelebration } from '../utils/celebration';
 import { devPulseApi } from '../utils/api';
+import { UserAvatar } from './UserAvatar';
 
 interface JiraKanbanBoardProps {
   issues: JiraIssue[];
@@ -395,12 +396,13 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                         {/* Card Bottom: Assignee + Fast Status Transition Buttons */}
                         <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
-                            <img
+                            <UserAvatar
                               src={issue.assignee.avatar}
-                              alt={issue.assignee.name}
-                              className="w-5 h-5 rounded-full ring-1 ring-slate-700"
+                              name={issue.assignee.name}
+                              handle={issue.assignee.handle}
+                              size="xs"
+                              shape="circle"
                               title={`Assignee: ${issue.assignee.name}`}
-                              referrerPolicy="no-referrer"
                             />
                             <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">
                               {issue.assignee.name.split(' ')[0]}
@@ -486,11 +488,12 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                     <td className="py-3 px-4 font-handjet text-base text-purple-300 font-bold">{issue.storyPoints} pts</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5">
-                        <img
+                        <UserAvatar
                           src={issue.assignee.avatar}
-                          alt={issue.assignee.name}
-                          className="w-5 h-5 rounded-full"
-                          referrerPolicy="no-referrer"
+                          name={issue.assignee.name}
+                          handle={issue.assignee.handle}
+                          size="xs"
+                          shape="circle"
                         />
                         <span className="text-slate-300">{issue.assignee.name}</span>
                       </div>

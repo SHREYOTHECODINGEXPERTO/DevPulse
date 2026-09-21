@@ -6,6 +6,7 @@ import {
   fetchGitHubCommits
 } from '../utils/github';
 import { soundFx } from '../utils/audio';
+import { UserAvatar } from './UserAvatar';
 import { 
   GitBranch, 
   Globe, 
@@ -475,19 +476,17 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({
       <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-4 shadow-xl">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-4 border-b border-white/5">
           <div className="flex items-center gap-3.5">
-            <div className="relative">
-              <img
-                src={currentUser.avatar || `https://github.com/${cleanUser}.png`}
-                alt={cleanUser}
-                className="w-13 h-13 rounded-2xl border-2 border-cyan-500/40 object-cover shadow-md shadow-cyan-500/10"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`;
-                }}
-              />
-              <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-950 flex items-center justify-center">
-                <Check className="w-2.5 h-2.5 text-white" />
-              </span>
-            </div>
+            <UserAvatar
+              src={currentUser.avatar}
+              name={currentUser.name || cleanUser}
+              handle={cleanUser}
+              size="lg"
+              shape="rounded"
+              ringColor="ring-2 ring-cyan-500/40 shadow-md shadow-cyan-500/10"
+              showStatus={true}
+              status="VCS Connected"
+              statusColor="bg-emerald-400"
+            />
             
             <div>
               <div className="flex items-center gap-2 flex-wrap">

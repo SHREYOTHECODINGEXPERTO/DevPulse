@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Developer } from '../types';
 import { soundFx } from '../utils/audio';
+import { UserAvatar } from './UserAvatar';
 
 export type NavTab = 'dashboard' | 'projects' | 'jira' | 'prs' | 'heatmap' | 'velocity' | 'integrations' | 'cicd';
 
@@ -335,19 +336,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="user-profile-header-btn"
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-full glass-pill hover:border-cyan-500/40 transition-all focus:outline-none"
+                className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full glass-pill hover:border-cyan-500/40 transition-all focus:outline-none cursor-pointer"
               >
-                <div className="relative">
-                  <img
-                    src={currentUser.avatar}
-                    alt={currentUser.name}
-                    className="w-7 h-7 rounded-full object-cover ring-1 ring-cyan-500/40"
-                    referrerPolicy="no-referrer"
-                  />
-                  <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 ring-1 ring-slate-950" />
-                </div>
+                <UserAvatar
+                  src={currentUser.avatar}
+                  name={currentUser.name}
+                  handle={currentUser.githubHandle || currentUser.handle}
+                  size="xs"
+                  shape="circle"
+                  ringColor="ring-1 ring-cyan-500/40"
+                  showStatus={true}
+                  status={currentUser.status}
+                  statusColor="bg-emerald-400"
+                />
                 <span className="hidden xl:inline text-xs font-mono text-slate-200">
-                  {currentUser.name.split(' ')[0]}
+                  {currentUser.name ? currentUser.name.split(' ')[0] : 'Developer'}
                 </span>
                 <ChevronDown className="w-3 h-3 text-slate-400" />
               </button>
@@ -358,11 +361,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-800">
-                    <img
+                    <UserAvatar
                       src={currentUser.avatar}
-                      alt={currentUser.name}
-                      className="w-10 h-10 rounded-full object-cover ring-1 ring-cyan-400"
-                      referrerPolicy="no-referrer"
+                      name={currentUser.name}
+                      handle={currentUser.githubHandle || currentUser.handle}
+                      size="md"
+                      shape="circle"
+                      ringColor="ring-1 ring-cyan-400"
+                      showStatus={true}
+                      status={currentUser.status}
+                      statusColor="bg-emerald-400"
                     />
                     <div>
                       <h4 className="text-xs font-semibold text-slate-100">{currentUser.name}</h4>

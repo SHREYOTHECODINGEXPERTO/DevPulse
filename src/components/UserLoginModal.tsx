@@ -4,6 +4,7 @@ import { GENZ_MEME_AVATARS, FUNNY_GENZ_DESIGNATIONS, FUNNY_STATUSES } from '../u
 import { soundFx } from '../utils/audio';
 import { fetchGitHubUser } from '../utils/github';
 import { triggerCodeCelebration } from '../utils/celebration';
+import { UserAvatar } from './UserAvatar';
 import { 
   User, 
   Sparkles, 
@@ -323,25 +324,24 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({
             </div>
 
             {/* Current Active Preview */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+            <div className="flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5">
               <div className="flex items-center gap-4">
-                <div className="relative w-16 h-16 rounded-full bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-500 p-[2px] shadow-lg shadow-cyan-500/20">
-                  <img
-                    src={avatarUrl || `https://github.com/${(githubUsername || handle || 'developer').trim().replace(/^@/, '')}.png`}
-                    alt="Selected PFP"
-                    className="w-full h-full rounded-full object-cover bg-slate-900"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = `https://github.com/${(githubUsername || handle || 'developer').trim().replace(/^@/, '')}.png`;
-                    }}
+                <div className="relative">
+                  <UserAvatar
+                    src={avatarUrl}
+                    name={name || 'Developer'}
+                    handle={githubUsername || handle || 'developer'}
+                    size="2xl"
+                    shape="circle"
+                    ringColor="ring-2 ring-cyan-400/50 shadow-lg shadow-cyan-500/20"
+                    showStatus={true}
+                    status={status}
+                    statusColor="bg-emerald-400"
                   />
-                  <span className="absolute -bottom-1 -right-1 p-1 rounded-full bg-emerald-500 text-slate-950">
-                    <Check className="w-2.5 h-2.5 stroke-[3]" />
-                  </span>
                 </div>
 
                 <div className="space-y-0.5 text-xs">
-                  <div className="text-white font-bold">{name || 'Your Name'}</div>
+                  <div className="text-white font-bold text-sm">{name || 'Your Name'}</div>
                   <div className="text-cyan-400 text-[11px]">@{handle || githubUsername || 'username'}</div>
                   <div className="text-[10px] text-slate-400 truncate max-w-sm">{role || 'Software Engineer'} &middot; {team || 'Engineering'}</div>
                   <div className="text-[9px] text-emerald-400 flex items-center gap-1">

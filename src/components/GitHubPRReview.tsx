@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { triggerCodeCelebration } from '../utils/celebration';
+import { UserAvatar } from './UserAvatar';
 
 interface GitHubPRReviewProps {
   pullRequests: PullRequest[];
@@ -242,11 +243,12 @@ export const GitHubPRReview: React.FC<GitHubPRReviewProps> = ({
 
                 {/* Author */}
                 <div className="flex items-center gap-1.5">
-                  <img
+                  <UserAvatar
                     src={pr.author.avatar}
-                    alt={pr.author.name}
-                    className="w-4 h-4 rounded-full"
-                    referrerPolicy="no-referrer"
+                    name={pr.author.name}
+                    handle={pr.author.handle}
+                    size="xs"
+                    shape="circle"
                   />
                   <span>by {pr.author.name.split(' ')[0]}</span>
                 </div>

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ProjectTechStack, GitHubRealRepo, Developer } from '../types';
 import { soundFx } from '../utils/audio';
 import { calculateLanguageStats } from '../utils/github';
+import { UserAvatar } from './UserAvatar';
 import { 
   Layers, 
   Code, 
@@ -225,23 +226,17 @@ export const ProjectsTechStackView: React.FC<ProjectsTechStackViewProps> = ({
         
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="relative">
-              {currentUser?.avatar ? (
-                <img
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
-                  className="w-13 h-13 rounded-xl object-cover ring-2 ring-cyan-500/40 shadow-lg shadow-cyan-500/20"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400">
-                  <Github className="w-6 h-6" />
-                </div>
-              )}
-              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-950 flex items-center justify-center" title="Live Synced">
-                <span className="w-1 h-1 rounded-full bg-white animate-ping" />
-              </span>
-            </div>
+            <UserAvatar
+              src={currentUser?.avatar}
+              name={currentUser?.name || activeHandle}
+              handle={activeHandle || currentUser?.handle}
+              size="lg"
+              shape="rounded"
+              ringColor="ring-2 ring-cyan-500/40 shadow-lg shadow-cyan-500/20"
+              showStatus={true}
+              status="Live Synced"
+              statusColor="bg-emerald-400"
+            />
 
             <div>
               <div className="flex items-center gap-2 flex-wrap">

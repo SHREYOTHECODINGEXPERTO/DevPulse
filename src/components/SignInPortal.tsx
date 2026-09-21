@@ -6,6 +6,7 @@ import { soundFx } from '../utils/audio';
 import { fetchGitHubUser } from '../utils/github';
 import { triggerCodeCelebration } from '../utils/celebration';
 import { devPulseApi } from '../utils/api';
+import { UserAvatar } from './UserAvatar';
 import { 
   Terminal, 
   Github, 
@@ -279,14 +280,13 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
                       className="w-full pl-8 pr-12 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors font-mono"
                     />
                     {ghUsername.trim() && (
-                      <div className="absolute right-3 w-6 h-6 rounded-full overflow-hidden border border-cyan-500/40">
-                        <img
+                      <div className="absolute right-3">
+                        <UserAvatar
                           src={`https://github.com/${ghUsername.trim().replace(/^@/, '')}.png`}
-                          alt="preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
+                          handle={ghUsername.trim().replace(/^@/, '')}
+                          size="xs"
+                          shape="circle"
+                          ringColor="ring-1 ring-cyan-500/40"
                         />
                       </div>
                     )}
