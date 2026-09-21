@@ -11,10 +11,11 @@
 [![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-4.21.2-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose_9.1-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongoosejs.com/)
+[![Gemini AI](https://img.shields.io/badge/Gemini_AI-2.5_Flash-8E75FF?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-v4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-6.2.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0.3-6BA539?style=for-the-badge&logo=openapiinitiative&logoColor=white)](https://devpulse-dashboard-two.vercel.app/api/docs)
-[![Tests](https://img.shields.io/badge/Tests-92%20Passed-10B981?style=for-the-badge&logo=jest&logoColor=white)](https://devpulse-dashboard-two.vercel.app/api/health)
+[![Tests](https://img.shields.io/badge/Tests-113%20Passed-10B981?style=for-the-badge&logo=jest&logoColor=white)](https://devpulse-dashboard-two.vercel.app/api/health)
 
 ---
 
@@ -22,7 +23,8 @@
 
 | Resource | Live Production Link (Vercel) | Local Development Link | Description |
 | :--- | :--- | :--- | :--- |
-| 🚀 **Web App Dashboard** | [devpulse-dashboard-two.vercel.app](https://devpulse-dashboard-two.vercel.app) | [`http://localhost:3000`](http://localhost:3000) | Live frontend developer dashboard |
+| 🚀 **Web App Dashboard** | [devpulse-dashboard-two.vercel.app](https://devpulse-dashboard-two.vercel.app) | [`http://localhost:3000`](http://localhost:3000) | Live frontend developer dashboard & AI portal |
+| 🤖 **AI Intelligence API** | [Live AI Endpoints](https://devpulse-dashboard-two.vercel.app/api/ai/generate-tasks) | [`http://localhost:5000/api/ai`](http://localhost:5000/api/ai) | Gemini 2.5 Flash + smart local fallback engine |
 | 📚 **Interactive Swagger UI** | [Live Swagger Docs](https://devpulse-dashboard-two.vercel.app/api/docs) | [`http://localhost:5000/api/docs`](http://localhost:5000/api/docs) | Live API sandbox & interactive documentation |
 | 📄 **OpenAPI 3.0.3 Spec** | [Live OpenAPI Spec](https://devpulse-dashboard-two.vercel.app/api/openapi.json) | [`http://localhost:5000/api/openapi.json`](http://localhost:5000/api/openapi.json) | OpenAPI 3.0.3 schema specification |
 | 💚 **API Health & DB Telemetry** | [Live Health Check](https://devpulse-dashboard-two.vercel.app/api/health) | [`http://localhost:5000/api/health`](http://localhost:5000/api/health) | Live server uptime, DB status & metrics |
@@ -40,15 +42,20 @@
 
 - [Overview](#-overview)
 - [Key Features](#-key-features)
+  - [AI-Powered Capabilities](#-ai-powered-capabilities-all-5-implemented)
+  - [Real-Time Hardware & Device Telemetry HUD](#-1-real-time-hardware--device-telemetry-hud)
+  - [Interactive Jira-Style Kanban Task Board](#-2-interactive-jira-style-kanban-task-board)
+  - [Annual Velocity & GitHub Contribution Heatmap](#-3-annual-velocity--github-contribution-heatmap)
+  - [Multi-Cloud & DevOps Integrations Hub](#-4-multi-cloud--devops-integrations-hub)
 - [System Architecture](#-system-architecture)
 - [Persistent Data Layer & Schemas](#-persistent-data-layer--schemas)
-- [Real-Time Telemetry & Hardware Engine](#-real-time-telemetry--hardware-engine)
-- [REST API Reference](#-rest-api-reference)
-  - [Users API](#1-users-api-apiusers)
-  - [Projects API](#2-projects-api-apiprojects)
-  - [Tasks & Status Lifecycle API](#3-tasks--status-lifecycle-api-apitasks)
+- [AI Intelligence & REST API Reference](#-rest-api-reference)
+  - [AI Intelligence API](#1-ai-intelligence-api-apiai)
+  - [Users API](#2-users-api-apiusers)
+  - [Projects API](#3-projects-api-apiprojects)
+  - [Tasks & Status Lifecycle API](#4-tasks--status-lifecycle-api-apitasks)
 - [Environment Configuration](#-environment-configuration)
-- [Vercel Serverless Deployment](#-vercel-serverless-deployment)
+- [Deployment Platforms (Vercel, Render, Netlify, Railway)](#-deployment-platforms)
 - [Getting Started](#-getting-started)
 - [Automated Testing](#-automated-testing)
 - [Postman Collection](#-postman-collection)
@@ -58,9 +65,42 @@
 
 ## 🌟 Overview
 
-**DevPulse** is a developer productivity platform engineered to give developers real-time observability over their coding rhythm, hardware performance, GitHub activity, and sprint delivery.
+**DevPulse** is an AI-powered project and task management platform engineered to give developers and engineering squads complete observability and automation over their sprint rhythm, coding telemetry, hardware performance, and project delivery.
 
-It pairs a **high-performance React 19 frontend** with a modular **Node.js/Express TypeScript REST API backend** and a **persistent Mongoose/MongoDB data layer**, providing full CRUD operations, status state-machine transitions, strict database-level validation, telemetry metrics, and interactive OpenAPI documentation.
+It combines a **modern React 19 / TypeScript frontend**, a modular **Node.js/Express REST API backend**, a **persistent Mongoose/MongoDB data layer**, and an **AI Intelligence Engine (Gemini 2.5 Flash + Resilient Local Fallback Engine)** delivering:
+1. **AI-Assisted Task Generation**
+2. **Task Summarization & Key Deliverable Extraction**
+3. **AI-Generated Project Descriptions & Technical Architecture Specs**
+4. **AI Sprint Productivity & Bottleneck Coach**
+5. **AI-Assisted Task Prioritization**
+6. **Interactive AI Developer Copilot**
+
+---
+
+## ✨ Key Features
+
+### 🤖 AI-Powered Capabilities (All 5 Implemented)
+
+1. **⚡ AI-Assisted Task Generation (`POST /api/ai/generate-tasks`)**:
+   - Takes a high-level feature goal (e.g. *"Build OAuth2 authentication with refresh tokens"*), target project, and desired count.
+   - Deconstructs the goal into 3–5 structured Jira-style tasks with realistic story points (Fibonacci sequence), issue types (`Story`, `Task`, `Refactor`, `Bug`), priorities, estimated hours, and tags.
+   - Features an animated modal preview with selective checkboxes and one-click import into the active sprint board.
+
+2. **📝 Task Summarization (`POST /api/ai/summarize`)**:
+   - Analyzes verbose task descriptions and comments to synthesize a 1–2 sentence executive summary.
+   - Extracts key deliverables, identifies technical risks, determines complexity, and suggests the immediate next action step.
+
+3. **🏗️ AI-Generated Project Descriptions (`POST /api/ai/project-description`)**:
+   - Generates production-grade technical overviews, architecture highlights, recommended deliverables, and tech stack tags directly within the Project Creation / Edit modal.
+
+4. **📊 AI Sprint Productivity Coach (`POST /api/ai/productivity-coach`)**:
+   - Inspects real-time board distribution (WIP limits, review bottlenecks, velocity score) and provides actionable coaching recommendations (e.g. review queue swarming, scope management).
+
+5. **🎯 AI-Assisted Task Prioritization (`POST /api/ai/prioritize`)**:
+   - Evaluates urgency scores (1–100), business impact, and due dates to intelligently sort backlog and sprint tasks by delivery criticality.
+
+6. **💬 Interactive AI Developer Copilot (`POST /api/ai/copilot`)**:
+   - Slide-out assistant drawer for systems architecture advice, schema optimizations, sprint retrospectives, and code snippet generation.
 
 ---
 
@@ -170,7 +210,18 @@ It pairs a **high-performance React 19 frontend** with a modular **Node.js/Expre
 
 Base URL: `http://localhost:5000/api` (or `https://devpulse-dashboard-two.vercel.app/api`)
 
-### 1. Users API (`/api/users`)
+### 1. AI Intelligence API (`/api/ai`)
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/ai/generate-tasks` | **AI-Assisted Task Generation**: Deconstructs feature goals into structured Jira tasks with points, types & tags |
+| `POST` | `/api/ai/summarize` | **Task Summarization**: Analyzes task details to generate executive summary, key deliverables & next steps |
+| `POST` | `/api/ai/project-description` | **AI Project Descriptions**: Synthesizes technical overviews, architecture highlights & tech stack recommendations |
+| `POST` | `/api/ai/productivity-coach` | **AI Productivity Coach**: Evaluates WIP limits, bottleneck stages & provides sprint optimization advice |
+| `POST` | `/api/ai/prioritize` | **AI-Assisted Task Prioritization**: Calculates urgency (1–100) & impact scores to prioritize tasks |
+| `POST` | `/api/ai/copilot` | **AI Developer Copilot**: Interactive multi-turn chat for code, schemas, and architecture consulting |
+
+### 2. Users API (`/api/users`)
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -182,7 +233,7 @@ Base URL: `http://localhost:5000/api` (or `https://devpulse-dashboard-two.vercel
 | `GET` | `/api/users/:id/stats` | Get user productivity metrics, velocity score, and task summary |
 | `GET` | `/api/users/:id/tasks` | Get all tasks assigned to user |
 
-### 2. Projects API (`/api/projects`)
+### 3. Projects API (`/api/projects`)
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -194,7 +245,7 @@ Base URL: `http://localhost:5000/api` (or `https://devpulse-dashboard-two.vercel
 | `GET` | `/api/projects/:id/tasks` | Get all tasks belonging to project |
 | `GET` | `/api/projects/:id/members` | Get all user members in project |
 
-### 3. Tasks & Status Lifecycle API (`/api/tasks`)
+### 4. Tasks & Status Lifecycle API (`/api/tasks`)
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -225,20 +276,36 @@ DB_NAME=devpulse
 DB_MAX_POOL_SIZE=10
 DB_MIN_POOL_SIZE=2
 STORAGE_FILE=./server/data/db.json
+
+# AI Intelligence Engine (Gemini 2.5 Flash / Optional)
+# Note: DevPulse operates with 100% functionality with or without an external key
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 ---
 
-## 🚀 Vercel Serverless Deployment
+## 🚀 Deployment Platforms
 
-DevPulse is pre-configured for full-stack deployment on **Vercel**:
-- **`vercel.json`**: Rewrites all `/api/(.*)` routes to the serverless entrypoint.
-- **`api/index.ts`**: Mounts the Express REST API as a Vercel Serverless Function and initializes database connections.
+DevPulse is architected for zero-configuration deployment across leading cloud platforms:
 
-To deploy to Vercel:
-```bash
-vercel deploy --prod
-```
+### 1. Vercel (Recommended for Full-Stack Serverless)
+- **Frontend + Backend API**: Configured via `vercel.json` and `api/index.ts`.
+- **Deploy**:
+  ```bash
+  npm i -g vercel
+  vercel deploy --prod
+  ```
+- **Environment Variables**: Add `MONGODB_URI` and `GEMINI_API_KEY` in Vercel Project Settings.
+
+### 2. Render / Railway (Docker / Node.js Web Service)
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npm run server`
+- **Health Check Path**: `/api/health`
+
+### 3. Netlify
+- **Build Command**: `npm run build`
+- **Publish Directory**: `dist`
+- **Redirects**: Configured in `public/_redirects` for SPA client routing.
 
 ---
 
@@ -268,13 +335,14 @@ npm run dev
 
 ## 🧪 Automated Testing
 
-DevPulse includes an automated E2E integration test suite covering **92 test assertions across 6 categories**:
+DevPulse includes an automated E2E integration test suite covering **113 test assertions across 7 categories**:
 1. Health & Database Telemetry Endpoints
 2. User Management & Schema Validation
 3. Project Management & Relational Modeling
 4. Task Lifecycle, Schema Constraints & Relations
 5. Cascading Deletions & Relational Cleanup
-6. Centralized Error Handling & Status Codes
+6. AI Intelligence & Copilot Endpoints (`POST /api/ai/*`)
+7. Centralized Error Handling & Status Codes
 
 ```bash
 # Run API & Database test suite
@@ -301,3 +369,4 @@ A pre-configured Postman v2.1 collection is included in [`docs/postman_collectio
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+

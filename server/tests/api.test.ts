@@ -418,9 +418,103 @@ async function runAllTests() {
     assert(verifyCascadeRes.status === 404, 'Child task was cascade deleted when project was deleted');
 
     // ----------------------------------------------------
-    // 6. CENTRALIZED ERROR HANDLING VERIFICATION
+    // 7. AI INTELLIGENCE & COPILOT ENDPOINTS TESTS
     // ----------------------------------------------------
-    console.log('\n📌 6. Centralized Error Handling & Status Codes:');
+    console.log('\n📌 7. AI Intelligence & Copilot Endpoints (/api/ai/*):');
+
+    // 7.1 AI Task Generation
+    const aiTaskGenRes = await request('/api/ai/generate-tasks', {
+      method: 'POST',
+      body: JSON.stringify({
+        goal: 'Implement OAuth2 authentication and session tokens',
+        count: 3,
+        projectKey: 'PULSE',
+      }),
+    });
+    assert(aiTaskGenRes.status === 200, 'POST /api/ai/generate-tasks returns 200 OK');
+    assert(Array.isArray(aiTaskGenRes.body.data.tasks), 'AI Task Generator returns an array of tasks');
+    assert(aiTaskGenRes.body.data.tasks.length >= 1, 'AI Task Generator produced at least 1 task');
+    assert(aiTaskGenRes.body.data.tasks[0].title !== undefined, 'AI Task has title');
+    assert(aiTaskGenRes.body.data.tasks[0].storyPoints !== undefined, 'AI Task has storyPoints');
+
+    // 7.2 AI Task Summarization
+    const aiSummarizeRes = await request('/api/ai/summarize', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: 'Refactor telemetry WebSocket subscriber buffer',
+        description: 'Currently the telemetry buffer can overflow when >10k packets arrive/sec. We need to introduce a ring buffer with backpressure and drop strategies.',
+        status: 'in-progress',
+        priority: 'high',
+      }),
+    });
+    assert(aiSummarizeRes.status === 200, 'POST /api/ai/summarize returns 200 OK');
+    assert(typeof aiSummarizeRes.body.data.summary === 'string', 'AI Summarization returns summary string');
+    assert(Array.isArray(aiSummarizeRes.body.data.keyDeliverables), 'AI Summarization returns keyDeliverables array');
+    assert(typeof aiSummarizeRes.body.data.suggestedNextStep === 'string', 'AI Summarization returns suggestedNextStep');
+
+    // 7.3 AI Project Description Generation
+    const aiProjDescRes = await request('/api/ai/project-description', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: 'Quantum Microservices Gateway',
+        primaryLanguage: 'Go',
+        techStack: ['Go', 'gRPC', 'Docker', 'Kubernetes'],
+        keywords: 'low latency, rate limiting, distributed proxy',
+      }),
+    });
+    assert(aiProjDescRes.status === 200, 'POST /api/ai/project-description returns 200 OK');
+    assert(typeof aiProjDescRes.body.data.description === 'string', 'AI Project Description returns text');
+    assert(aiProjDescRes.body.data.description.length > 20, 'AI Project Description is rich and descriptive');
+
+    // 7.4 AI Sprint Productivity Coach
+    const aiCoachRes = await request('/api/ai/productivity-coach', {
+      method: 'POST',
+      body: JSON.stringify({
+        tasks: [
+          { id: 't-1', title: 'DB Schema Migration', status: 'in-progress', priority: 'high', storyPoints: 8 },
+          { id: 't-2', title: 'API Gateway Proxy', status: 'in-progress', priority: 'high', storyPoints: 5 },
+          { id: 't-3', title: 'Auth Middleware', status: 'in-progress', priority: 'high', storyPoints: 5 },
+          { id: 't-4', title: 'Stripe Integration', status: 'in-review', priority: 'medium', storyPoints: 3 },
+          { id: 't-5', title: 'Landing Page', status: 'done', priority: 'low', storyPoints: 2 },
+        ],
+        velocityScore: 82,
+        teamSize: 4,
+      }),
+    });
+    assert(aiCoachRes.status === 200, 'POST /api/ai/productivity-coach returns 200 OK');
+    assert(Array.isArray(aiCoachRes.body.data.suggestions), 'AI Productivity Coach returns suggestions list');
+    assert(typeof aiCoachRes.body.data.bottleneckAnalysis === 'string', 'AI Productivity Coach provides bottleneck analysis');
+
+    // 7.5 AI Task Prioritization
+    const aiPrioritizeRes = await request('/api/ai/prioritize', {
+      method: 'POST',
+      body: JSON.stringify({
+        tasks: [
+          { id: 't-low', title: 'Update footer copyright year', priority: 'low', dueDate: '2026-12-31' },
+          { id: 't-crit', title: 'Critical Auth Vulnerability Patch', priority: 'critical', dueDate: '2026-08-01' },
+        ],
+      }),
+    });
+    assert(aiPrioritizeRes.status === 200, 'POST /api/ai/prioritize returns 200 OK');
+    assert(Array.isArray(aiPrioritizeRes.body.data.reorderedTasks), 'AI Prioritization returns reordered tasks');
+    assert(aiPrioritizeRes.body.data.reorderedTasks[0].id === 't-crit', 'AI Prioritization placed critical task first');
+
+    // 7.6 AI Copilot Interactive Chat
+    const aiCopilotRes = await request('/api/ai/copilot', {
+      method: 'POST',
+      body: JSON.stringify({
+        prompt: 'How do I optimize MongoDB indexes for high-throughput queries in DevPulse?',
+        context: { activeTab: 'projects', totalTasks: 12 },
+      }),
+    });
+    assert(aiCopilotRes.status === 200, 'POST /api/ai/copilot returns 200 OK');
+    assert(typeof aiCopilotRes.body.data.reply === 'string', 'AI Copilot returns text reply');
+    assert(aiCopilotRes.body.data.reply.length > 20, 'AI Copilot reply is substantive');
+
+    // ----------------------------------------------------
+    // 8. CENTRALIZED ERROR HANDLING VERIFICATION
+    // ----------------------------------------------------
+    console.log('\n📌 8. Centralized Error Handling & Status Codes:');
 
     // 404 for unknown route
     const unknownRouteRes = await request('/api/unknown-route-12345');
@@ -439,6 +533,8 @@ async function runAllTests() {
     const malformedBody = await malformedJsonRes.json();
     assert(malformedJsonRes.status === 400, 'POST with malformed JSON body returns 400 BAD REQUEST');
     assert(malformedBody.error.code === 'MALFORMED_JSON', 'Malformed JSON returns MALFORMED_JSON code');
+
+
 
   } catch (err) {
     console.error('Test execution exception:', err);

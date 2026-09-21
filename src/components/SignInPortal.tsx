@@ -5,6 +5,7 @@ import { GENZ_MEME_AVATARS, FUNNY_GENZ_DESIGNATIONS, FUNNY_STATUSES } from '../u
 import { soundFx } from '../utils/audio';
 import { fetchGitHubUser } from '../utils/github';
 import { triggerCodeCelebration } from '../utils/celebration';
+import { devPulseApi } from '../utils/api';
 import { 
   Terminal, 
   Github, 
@@ -129,6 +130,18 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
       githubUsername: cleanHandle,
       githubHandle: cleanHandle,
     };
+
+    // Register & persist user in backend MongoDB / store
+    devPulseApi.createUser({
+      name: newDev.name,
+      handle: newDev.handle,
+      email: customEmail.trim() || `${cleanHandle}@devpulse.io`,
+      role: newDev.role,
+      team: newDev.team,
+      status: newDev.status,
+      bio: newDev.bio,
+      avatar: newDev.avatar,
+    }).catch((err) => console.warn('[Backend User Registration]', err));
 
     await onSignInSuccess(newDev);
   };

@@ -43,6 +43,9 @@ interface NavbarProps {
   openJiraCount: number;
   openPRCount: number;
   projectsCount?: number;
+  onOpenAICopilot?: () => void;
+  onOpenTaskGenerator?: () => void;
+  onOpenProductivityCoach?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -62,6 +65,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   openJiraCount,
   openPRCount,
   projectsCount = 6,
+  onOpenAICopilot,
+  onOpenTaskGenerator,
+  onOpenProductivityCoach,
 }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
@@ -281,11 +287,44 @@ export const Navbar: React.FC<NavbarProps> = ({
               {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
             </button>
 
+            {/* AI Task Generator Quick Launcher */}
+            {onOpenTaskGenerator && (
+              <button
+                id="ai-task-gen-btn"
+                onClick={() => {
+                  soundFx.playClick(600, 0.03);
+                  onOpenTaskGenerator();
+                }}
+                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold transition-all shadow-sm cursor-pointer"
+                title="AI-Assisted Task Generator"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                <span>AI Tasks</span>
+              </button>
+            )}
+
+            {/* AI Copilot Trigger */}
+            {onOpenAICopilot && (
+              <button
+                id="ai-copilot-btn"
+                onClick={() => {
+                  soundFx.playClick(750, 0.04);
+                  onOpenAICopilot();
+                }}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/40 text-indigo-200 text-xs font-mono font-bold transition-all shadow-md shadow-indigo-500/10 cursor-pointer"
+                title="Open DevPulse AI Copilot"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="hidden sm:inline">AI Copilot</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              </button>
+            )}
+
             {/* Quick Create Button */}
             <button
               id="quick-create-btn"
               onClick={onOpenQuickCreate}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-semibold text-xs transition-all shadow-md shadow-cyan-500/20 active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-semibold text-xs transition-all shadow-md shadow-cyan-500/20 active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span className="hidden sm:inline font-mono">Create</span>

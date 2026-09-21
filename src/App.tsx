@@ -37,6 +37,13 @@ import { SignInPortal } from './components/SignInPortal';
 import { ProjectsTechStackView } from './components/ProjectsTechStackView';
 import { AnnualVelocityView } from './components/AnnualVelocityView';
 import { FocusModeOverlay } from './components/FocusModeOverlay';
+import { AITaskGeneratorModal } from './components/AITaskGeneratorModal';
+import { AIProductivityCoach } from './components/AIProductivityCoach';
+import { AICopilotDrawer } from './components/AICopilotDrawer';
+import { CreateProjectModal } from './components/CreateProjectModal';
+import { ProjectDetailModal } from './components/ProjectDetailModal';
+import { TaskDetailModal } from './components/TaskDetailModal';
+import { devPulseApi } from './utils/api';
 import { useDeviceTelemetry } from './utils/deviceAnalyzer';
 import { 
   buildProjectsFromGitHub, 
@@ -239,6 +246,16 @@ export default function App() {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [isGitHubLoading, setIsGitHubLoading] = useState(false);
   const [gitHubError, setGitHubError] = useState<string | null>(null);
+
+  // AI & Project/Task Detail Modals States
+  const [aiTaskGenOpen, setAiTaskGenOpen] = useState(false);
+  const [aiTaskGenProjectKey, setAiTaskGenProjectKey] = useState<string>('PULSE');
+  const [aiCoachOpen, setAiCoachOpen] = useState(false);
+  const [aiCopilotOpen, setAiCopilotOpen] = useState(false);
+  const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<ProjectTechStack | null>(null);
+  const [selectedProjectDetail, setSelectedProjectDetail] = useState<ProjectTechStack | null>(null);
+  const [selectedTaskDetail, setSelectedTaskDetail] = useState<JiraIssue | null>(null);
 
   // Persist State Changes
   useEffect(() => {
@@ -823,6 +840,138 @@ export default function App() {
     setActivityEvents((prev) => [newEvt, ...prev]);
   };
 
+  // Handle Tasks Imported From AI Generator
+  const handleTasksImportedFromAI = (newTasks: any[]) => {
+    if (!Array.isArray(newTasks) || newTasks.length === 0) return;
+    setJiraIssues((prev) => [...newTasks, ...prev]);
+
+    const newEvt: ActivityEvent = {
+      id: generateUniqueId('act-ai-tasks'),
+      timestamp: 'Just now',
+      type: 'jira_create',
+      title: `⚡ AI Generated ${newTasks.length} Jira Tasks`,
+      description: `Imported ${newTasks.length} AI-assisted tasks into Kanban sprint board.`,
+      source: 'jira',
+      user: currentUser,
+    };
+    setActivityEvents((prev) => [newEvt, ...prev]);
+  };
+
+  // Handle Project Workspace Saved (Create / Edit)
+  const handleProjectSaved = (savedProject: ProjectTechStack) => {
+    const exists = realRepos.some((r) => r.name === savedProject.repoName || String(r.id) === savedProject.id);
+
+    if (exists) {
+      setRealRepos((prev) =>
+        prev.map((r) =>
+          r.name === savedProject.repoName || String(r.id) === savedProject.id
+            ? {
+                ...r,
+                name: savedProject.repoName,
+                description: savedProject.description,
+                language: savedProject.primaryLanguage,
+                html_url: savedProject.htmlUrl,
+              }
+            : r
+        )
+      );
+    } else {
+      const newRepo: GitHubRealRepo = {
+        id: Date.now(),
+        name: savedProject.repoName,
+        full_name: savedProject.fullName,
+        html_url: savedProject.htmlUrl,
+        description: savedProject.description,
+        stargazers_count: savedProject.stars || 0,
+        forks_count: savedProject.forks || 0,
+        language: savedProject.primaryLanguage,
+        updated_at: new Date().toISOString(),
+        open_issues_count: savedProject.openIssues || 0,
+        default_branch: savedProject.defaultBranch || 'main',
+        private: false,
+      };
+      setRealRepos((prev) => [newRepo, ...prev]);
+    }
+
+    const newEvt: ActivityEvent = {
+      id: generateUniqueId('act-proj'),
+      timestamp: 'Just now',
+      type: 'jira_create',
+      title: exists ? `Updated project "${savedProject.repoName}"` : `Created project "${savedProject.repoName}"`,
+      description: `Project workspace ${savedProject.repoName} (${savedProject.primaryLanguage}) configured.`,
+      source: 'system',
+      user: currentUser,
+    };
+    setActivityEvents((prev) => [newEvt, ...prev]);
+  };
+
+  // Handle Project Cascade Deletion
+  const handleDeleteProject = (projectId: string) => {
+    const targetProject = projects.find((p) => p.id === projectId || p.repoName === projectId);
+    const repoName = targetProject?.repoName || projectId;
+
+    // 1. Remove from repos
+    setRealRepos((prev) => prev.filter((r) => r.name !== repoName && String(r.id) !== projectId));
+
+    // 2. Cascade delete all child tasks belonging to this project
+    setJiraIssues((prev) =>
+      prev.filter((issue) => {
+        const matchKey = issue.key.startsWith(projectId.toUpperCase().slice(0, 4));
+        const matchRepo = issue.repo && issue.repo.includes(repoName);
+        const matchTag = issue.tags.some((t) => t.toLowerCase() === repoName.toLowerCase());
+        return !(matchKey || matchRepo || matchTag);
+      })
+    );
+
+    const deleteEvt: ActivityEvent = {
+      id: generateUniqueId('act-del-proj'),
+      timestamp: 'Just now',
+      type: 'jira_status',
+      title: `Deleted project "${repoName}"`,
+      description: `Project and associated child sprint tasks cascade deleted.`,
+      source: 'system',
+      user: currentUser,
+    };
+    setActivityEvents((prev) => [deleteEvt, ...prev]);
+  };
+
+  // Handle Save Task Detail
+  const handleSaveTaskDetail = (updated: JiraIssue) => {
+    setJiraIssues((prev) => prev.map((issue) => (issue.id === updated.id ? updated : issue)));
+
+    const updateEvt: ActivityEvent = {
+      id: generateUniqueId('act-update-task'),
+      timestamp: 'Just now',
+      type: 'jira_status',
+      title: `Updated task ${updated.key}: ${updated.title}`,
+      description: `Status: [${updated.status}] &middot; Priority: [${updated.priority}] &middot; Assignee: @${updated.assignee.handle}`,
+      source: 'jira',
+      linkKey: updated.key,
+      user: currentUser,
+    };
+    setActivityEvents((prev) => [updateEvt, ...prev]);
+  };
+
+  // Handle Delete Task
+  const handleDeleteTask = (issueId: string) => {
+    const target = jiraIssues.find((i) => i.id === issueId);
+    setJiraIssues((prev) => prev.filter((issue) => issue.id !== issueId));
+
+    if (target) {
+      const deleteEvt: ActivityEvent = {
+        id: generateUniqueId('act-del-task'),
+        timestamp: 'Just now',
+        type: 'jira_status',
+        title: `Deleted task ${target.key}`,
+        description: `Removed "${target.title}" from sprint board.`,
+        source: 'jira',
+        linkKey: target.key,
+        user: currentUser,
+      };
+      setActivityEvents((prev) => [deleteEvt, ...prev]);
+    }
+  };
+
   const openJiraCount = jiraIssues.filter((i) => i.status !== 'Done').length;
   const openPRCount = pullRequests.filter((p) => p.status === 'open').length;
 
@@ -859,6 +1008,12 @@ export default function App() {
         openJiraCount={openJiraCount}
         openPRCount={openPRCount}
         projectsCount={projects.length}
+        onOpenAICopilot={() => setAiCopilotOpen(true)}
+        onOpenTaskGenerator={() => {
+          setAiTaskGenProjectKey('PULSE');
+          setAiTaskGenOpen(true);
+        }}
+        onOpenProductivityCoach={() => setAiCoachOpen(true)}
       />
 
       {/* Main Responsive Body Canvas */}
@@ -1182,6 +1337,13 @@ export default function App() {
               onOpenGitHubSync={() => setActiveTab('integrations')}
               onSyncGitHubUser={(username) => handleSyncGitHubUser(username, currentUser.githubToken)}
               isGitHubLoading={isGitHubLoading}
+              onOpenCreateProject={() => {
+                setEditingProject(null);
+                setCreateProjectOpen(true);
+              }}
+              onSelectProject={(project) => {
+                setSelectedProjectDetail(project);
+              }}
             />
           </div>
         )}
@@ -1197,6 +1359,16 @@ export default function App() {
                 setActiveTab('prs');
               }}
               teamMembers={teamMembers}
+              onSelectTask={(issue) => {
+                setSelectedTaskDetail(issue);
+              }}
+              onOpenTaskGenerator={() => {
+                setAiTaskGenProjectKey('PULSE');
+                setAiTaskGenOpen(true);
+              }}
+              onReorderIssues={(reordered) => {
+                setJiraIssues(reordered);
+              }}
             />
           </div>
         )}
@@ -1339,6 +1511,100 @@ export default function App() {
         currentUser={currentUser}
         onSaveUser={handleSaveUserProfile}
         onSaveProfile={handleSaveUserProfile}
+      />
+
+      {/* AI Capability 1: AI Task Generator Modal */}
+      <AITaskGeneratorModal
+        isOpen={aiTaskGenOpen}
+        onClose={() => setAiTaskGenOpen(false)}
+        projects={projects}
+        selectedProjectKey={aiTaskGenProjectKey}
+        currentUser={currentUser}
+        onTasksImported={handleTasksImportedFromAI}
+      />
+
+      {/* AI Capability 4: AI Sprint Productivity Coach */}
+      <AIProductivityCoach
+        isOpen={aiCoachOpen}
+        onClose={() => setAiCoachOpen(false)}
+        issues={jiraIssues}
+        currentUser={currentUser}
+        velocityScore={gitHubMetrics?.totalCommits ? Math.min(99, 70 + Math.round(gitHubMetrics.totalCommits / 10)) : 88}
+        onOpenTaskGenerator={() => {
+          setAiCoachOpen(false);
+          setAiTaskGenProjectKey('PULSE');
+          setAiTaskGenOpen(true);
+        }}
+      />
+
+      {/* Interactive AI Developer Copilot Drawer */}
+      <AICopilotDrawer
+        isOpen={aiCopilotOpen}
+        onClose={() => setAiCopilotOpen(false)}
+        currentUser={currentUser}
+        activeTaskCount={jiraIssues.filter((i) => i.status !== 'Done').length}
+        velocityScore={gitHubMetrics?.totalCommits ? Math.min(99, 70 + Math.round(gitHubMetrics.totalCommits / 10)) : 88}
+        onOpenTaskGenerator={() => {
+          setAiCopilotOpen(false);
+          setAiTaskGenProjectKey('PULSE');
+          setAiTaskGenOpen(true);
+        }}
+      />
+
+      {/* Project Creation & Edit Modal (with AI Capability 3: Project Description Generation) */}
+      <CreateProjectModal
+        isOpen={createProjectOpen}
+        onClose={() => {
+          setCreateProjectOpen(false);
+          setEditingProject(null);
+        }}
+        onProjectSaved={handleProjectSaved}
+        currentUser={currentUser}
+        editingProject={editingProject}
+      />
+
+      {/* Project Detail Drawer */}
+      <ProjectDetailModal
+        isOpen={!!selectedProjectDetail}
+        onClose={() => setSelectedProjectDetail(null)}
+        project={selectedProjectDetail}
+        issues={jiraIssues}
+        currentUser={currentUser}
+        onEditProject={(proj) => {
+          setSelectedProjectDetail(null);
+          setEditingProject(proj);
+          setCreateProjectOpen(true);
+        }}
+        onDeleteProject={(projId) => {
+          handleDeleteProject(projId);
+          setSelectedProjectDetail(null);
+        }}
+        onOpenTaskGenerator={(projKey) => {
+          setSelectedProjectDetail(null);
+          setAiTaskGenProjectKey(projKey);
+          setAiTaskGenOpen(true);
+        }}
+        onCreateTask={(projectName) => {
+          setSelectedProjectDetail(null);
+          setQuickCreateOpen(true);
+        }}
+      />
+
+      {/* Task Detail Modal (with Status Transitions & AI Capability 2: Task Summarization) */}
+      <TaskDetailModal
+        isOpen={!!selectedTaskDetail}
+        onClose={() => setSelectedTaskDetail(null)}
+        issue={selectedTaskDetail}
+        onSaveTask={(updated) => {
+          handleSaveTaskDetail(updated);
+          setSelectedTaskDetail(null);
+        }}
+        onDeleteTask={(issueId) => {
+          handleDeleteTask(issueId);
+          setSelectedTaskDetail(null);
+        }}
+        teamMembers={teamMembers}
+        currentUser={currentUser}
       />
 
       {/* Futuristic Footer */}

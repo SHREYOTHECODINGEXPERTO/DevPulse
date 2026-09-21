@@ -45,6 +45,8 @@ interface ProjectsTechStackViewProps {
   onOpenGitHubSync?: () => void;
   onSyncGitHubUser?: (username: string) => void;
   isGitHubLoading?: boolean;
+  onOpenCreateProject?: () => void;
+  onSelectProject?: (project: ProjectTechStack) => void;
 }
 
 function formatRelativeTime(dateString?: string): string {
@@ -84,6 +86,8 @@ export const ProjectsTechStackView: React.FC<ProjectsTechStackViewProps> = ({
   onOpenGitHubSync,
   onSyncGitHubUser,
   isGitHubLoading,
+  onOpenCreateProject,
+  onSelectProject,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTech, setSelectedTech] = useState<string>('all');
@@ -300,13 +304,28 @@ export const ProjectsTechStackView: React.FC<ProjectsTechStackViewProps> = ({
               </a>
             )}
 
+            {/* Create Project Workspace Button */}
+            {onOpenCreateProject && (
+              <button
+                onClick={() => {
+                  soundFx.playClick(600, 0.04);
+                  onOpenCreateProject();
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-black text-xs font-mono font-bold shadow-md shadow-cyan-500/20 transition-all cursor-pointer whitespace-nowrap"
+                title="Create a new Project Workspace"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Project</span>
+              </button>
+            )}
+
             {onOpenGitHubSync && (
               <button
                 onClick={() => {
                   soundFx.playClick(600, 0.04);
                   onOpenGitHubSync();
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-mono transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-mono transition-colors cursor-pointer"
                 title="Integrations & Settings"
               >
                 <Sparkles className="w-3.5 h-3.5 text-purple-400" />
@@ -799,13 +818,27 @@ export const ProjectsTechStackView: React.FC<ProjectsTechStackViewProps> = ({
                     </a>
                   )}
 
+                  {onSelectProject && (
+                    <button
+                      onClick={() => {
+                        soundFx.playClick(600, 0.03);
+                        onSelectProject(project);
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-indigo-200 border border-indigo-500/30 text-[11px] font-mono transition-colors cursor-pointer"
+                      title="View Project Workspace Details & Telemetry"
+                    >
+                      <Layers className="w-3 h-3" />
+                      <span>Details</span>
+                    </button>
+                  )}
+
                   {onCreateTaskForRepo && (
                     <button
                       onClick={() => {
                         soundFx.playClick(650, 0.04);
                         onCreateTaskForRepo(project.repoName);
                       }}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 text-[11px] font-mono transition-colors"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 text-[11px] font-mono transition-colors cursor-pointer"
                       title="Create Sprint Task in Kanban board"
                     >
                       <Plus className="w-3 h-3" />

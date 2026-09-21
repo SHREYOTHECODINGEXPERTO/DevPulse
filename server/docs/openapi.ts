@@ -40,6 +40,10 @@ export const openApiSpec = {
       name: 'Health & System',
       description: 'API health checks and system telemetry',
     },
+    {
+      name: 'AI Intelligence',
+      description: 'AI-assisted task generation, summarization, project descriptions, productivity coach, and prioritization',
+    },
   ],
   paths: {
     '/health': {
@@ -478,6 +482,165 @@ export const openApiSpec = {
             content: { 'application/json': { schema: { $ref: '#/components/schemas/BulkUpdateTaskStatusResponse' } } },
           },
           '422': { $ref: '#/components/responses/UnprocessableEntityError' },
+        },
+      },
+    },
+    '/ai/generate-tasks': {
+      post: {
+        tags: ['AI Intelligence'],
+        summary: 'Generate structured Jira tasks from feature goal',
+        description: 'Breaks down a feature specification or project goal into 3-5 Jira tasks with story points and criteria.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['goal'],
+                properties: {
+                  goal: { type: 'string', example: 'Implement OAuth2 PKCE authorization flow' },
+                  projectKey: { type: 'string', example: 'PULSE' },
+                  projectName: { type: 'string', example: 'DevPulse Platform' },
+                  techStack: { type: 'array', items: { type: 'string' }, example: ['React', 'Node.js'] },
+                  taskCount: { type: 'integer', example: 4 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Tasks generated successfully' },
+          '400': { $ref: '#/components/responses/ValidationError' },
+        },
+      },
+    },
+    '/ai/summarize': {
+      post: {
+        tags: ['AI Intelligence'],
+        summary: 'Summarize task details and progress',
+        description: 'Generates executive summary, key risks, and next steps for a task.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['title'],
+                properties: {
+                  title: { type: 'string', example: 'Refactor WebSocket Telemetry Connection' },
+                  description: { type: 'string' },
+                  status: { type: 'string', example: 'in-progress' },
+                  priority: { type: 'string', example: 'High' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Task summarized successfully' },
+          '400': { $ref: '#/components/responses/ValidationError' },
+        },
+      },
+    },
+    '/ai/project-description': {
+      post: {
+        tags: ['AI Intelligence'],
+        summary: 'Generate AI project description & architecture scope',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name'],
+                properties: {
+                  name: { type: 'string', example: 'Cloud Telemetry Engine' },
+                  primaryLanguage: { type: 'string', example: 'TypeScript' },
+                  techStack: { type: 'array', items: { type: 'string' } },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Project description generated' },
+        },
+      },
+    },
+    '/ai/productivity-coach': {
+      post: {
+        tags: ['AI Intelligence'],
+        summary: 'Get real-time productivity & sprint coach suggestions',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  tasks: { type: 'array', items: { type: 'object' } },
+                  velocityScore: { type: 'number', example: 88 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Productivity suggestions retrieved' },
+        },
+      },
+    },
+    '/ai/prioritize': {
+      post: {
+        tags: ['AI Intelligence'],
+        summary: 'Prioritize task backlog using urgency and impact analysis',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['tasks'],
+                properties: {
+                  tasks: { type: 'array', items: { type: 'object' } },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Tasks prioritized successfully' },
+        },
+      },
+    },
+    '/ai/copilot': {
+      post: {
+        tags: ['AI Intelligence'],
+        summary: 'Interactive AI Developer Copilot conversation',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['messages'],
+                properties: {
+                  messages: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        role: { type: 'string', enum: ['user', 'assistant', 'system'] },
+                        content: { type: 'string' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Copilot response returned' },
         },
       },
     },

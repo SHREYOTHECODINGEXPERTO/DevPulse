@@ -17,10 +17,15 @@ import {
   Flame, 
   ChevronRight,
   ExternalLink,
-  Layers
+  Layers,
+  Sparkles,
+  Calendar,
+  Zap,
+  Loader2
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import { triggerCodeCelebration } from '../utils/celebration';
+import { devPulseApi } from '../utils/api';
 
 interface JiraKanbanBoardProps {
   issues: JiraIssue[];
@@ -28,6 +33,9 @@ interface JiraKanbanBoardProps {
   onOpenQuickCreate: () => void;
   onSelectPR?: (prIdOrKey: string) => void;
   teamMembers: Developer[];
+  onSelectTask?: (issue: JiraIssue) => void;
+  onOpenTaskGenerator?: () => void;
+  onReorderIssues?: (reordered: JiraIssue[]) => void;
 }
 
 const COLUMNS: { id: IssueStatus; title: string; color: string; border: string }[] = [
@@ -44,12 +52,17 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
   onOpenQuickCreate,
   onSelectPR,
   teamMembers,
+  onSelectTask,
+  onOpenTaskGenerator,
+  onReorderIssues,
 }) => {
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAssignee, setSelectedAssignee] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
   const [selectedSprint, setSelectedSprint] = useState<string>('all');
+  const [isPrioritizing, setIsPrioritizing] = useState(false);
+  const [aiPrioritizedNotice, setAiPrioritizedNotice] = useState<string | null>(null);
 
   // Filter issues
   const filteredIssues = issues.filter((issue) => {
@@ -64,6 +77,46 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
 
     return matchesSearch && matchesAssignee && matchesPriority && matchesSprint;
   });
+
+  const handleAIPrioritize = async () => {
+    setIsPrioritizing(true);
+    soundFx.playClick(700, 0.04);
+
+    try {
+      const res = await devPulseApi.prioritizeAITasks(
+        issues.map((i) => ({
+          id: i.id,
+          title: i.title,
+          priority: i.priority,
+          storyPoints: i.storyPoints,
+          status: i.status.toLowerCase().replace(' ', '-') as any,
+          dueDate: i.dueDate,
+        }))
+      );
+
+      if (res.success && res.data?.prioritized) {
+        soundFx.playSuccess();
+        triggerCodeCelebration({ particleCount: 50, spread: 70 });
+        setAiPrioritizedNotice(`AI prioritized ${res.data.prioritized.length} backlog items based on urgency, dependencies & impact.`);
+
+        if (onReorderIssues) {
+          const priorityWeight: Record<string, number> = { Critical: 4, High: 3, Medium: 2, Low: 1 };
+          const reordered = [...issues].sort((a, b) => {
+            const pA = res.data.prioritized.find((p) => p.taskId === a.id);
+            const pB = res.data.prioritized.find((p) => p.taskId === b.id);
+            const scoreA = pA ? pA.urgencyScore + pA.impactScore : (priorityWeight[a.priority] || 1) * 20;
+            const scoreB = pB ? pB.urgencyScore + pB.impactScore : (priorityWeight[b.priority] || 1) * 20;
+            return scoreB - scoreA;
+          });
+          onReorderIssues(reordered);
+        }
+      }
+    } catch (err) {
+      console.warn('[AI Prioritize]', err);
+    } finally {
+      setIsPrioritizing(false);
+    }
+  };
 
   const getPriorityBadge = (priority: JiraIssue['priority']) => {
     switch (priority) {
@@ -112,7 +165,7 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-mono">
       
       {/* Header & Filter Controls */}
       <div className="glass-panel rounded-2xl p-4 border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
@@ -127,7 +180,7 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                 [{filteredIssues.length} ISSUES]
               </span>
             </h3>
-            <p className="text-xs font-mono text-slate-400">
+            <p className="text-xs text-slate-400">
               Sprint 34: Apex Velocity &middot; Closes in 4 days
             </p>
           </div>
@@ -136,14 +189,14 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
         {/* Search, Filters, and View Switcher */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Search Box */}
-          <div className="relative flex-1 sm:w-56">
+          <div className="relative flex-1 sm:w-48">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search key, title, tag..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
             />
           </div>
 
@@ -151,7 +204,7 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
           <select
             value={selectedAssignee}
             onChange={(e) => setSelectedAssignee(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500"
+            className="px-2.5 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
           >
             <option value="all">All Assignees</option>
             {teamMembers.map((m) => (
@@ -163,7 +216,7 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
           <select
             value={selectedPriority}
             onChange={(e) => setSelectedPriority(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500"
+            className="px-2.5 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
           >
             <option value="all">All Priorities</option>
             <option value="Critical">Critical</option>
@@ -171,6 +224,33 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
             <option value="Medium">Medium</option>
             <option value="Low">Low</option>
           </select>
+
+          {/* AI Prioritize Backlog Button */}
+          <button
+            onClick={handleAIPrioritize}
+            disabled={isPrioritizing}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+            title="AI-Assisted Task Prioritization"
+          >
+            {isPrioritizing ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            )}
+            <span className="hidden sm:inline">AI Prioritize</span>
+          </button>
+
+          {/* AI Task Generator Quick Launcher */}
+          {onOpenTaskGenerator && (
+            <button
+              onClick={onOpenTaskGenerator}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer"
+              title="AI Task Generator"
+            >
+              <Zap className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">AI Tasks</span>
+            </button>
+          )}
 
           {/* View Toggle */}
           <div className="flex items-center p-0.5 rounded-lg bg-slate-900 border border-slate-800">
@@ -197,13 +277,29 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
           {/* Create Issue */}
           <button
             onClick={onOpenQuickCreate}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-semibold shadow-md shadow-blue-600/20"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-black text-xs font-bold shadow-md shadow-cyan-500/20 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Issue</span>
           </button>
         </div>
       </div>
+
+      {/* AI Prioritized Alert Notice */}
+      {aiPrioritizedNotice && (
+        <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs flex items-center justify-between animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+            <span>{aiPrioritizedNotice}</span>
+          </div>
+          <button
+            onClick={() => setAiPrioritizedNotice(null)}
+            className="text-xs text-indigo-400 hover:text-white px-2"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Kanban Board View */}
       {viewMode === 'board' ? (
@@ -242,13 +338,17 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                     colIssues.map((issue) => (
                       <div
                         key={issue.id}
-                        className="glass-panel-interactive rounded-xl p-3.5 border border-slate-800 relative group flex flex-col justify-between"
+                        onClick={() => {
+                          soundFx.playClick(600, 0.02);
+                          onSelectTask?.(issue);
+                        }}
+                        className="glass-panel-interactive rounded-xl p-3.5 border border-slate-800 relative group flex flex-col justify-between cursor-pointer hover:border-cyan-500/40 transition-all"
                       >
                         <div>
                           {/* Top row: Key + Type + Priority */}
                           <div className="flex items-center justify-between gap-1.5 mb-2">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-mono font-bold text-cyan-400 hover:underline cursor-pointer">
+                              <span className="text-xs font-mono font-bold text-cyan-400 hover:underline">
                                 {issue.key}
                               </span>
                               {getTypeBadge(issue.type)}
@@ -263,11 +363,20 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                             {issue.title}
                           </h4>
 
-                          {/* Tags & Linked PR */}
-                          <div className="flex flex-wrap items-center gap-1 mb-3">
+                          {/* Tags, Due Date & Linked PR */}
+                          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                            {issue.dueDate && (
+                              <span className="flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
+                                <Calendar className="w-2.5 h-2.5 text-cyan-400" />
+                                <span>{issue.dueDate}</span>
+                              </span>
+                            )}
                             {issue.linkedPR && (
                               <button
-                                onClick={() => onSelectPR?.(issue.linkedPR || '')}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onSelectPR?.(issue.linkedPR || '');
+                                }}
                                 className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono hover:bg-emerald-500/20 transition-colors"
                                 title="Open Linked GitHub Pull Request"
                               >
@@ -302,7 +411,10 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                           <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                             {col.id !== 'Backlog' && (
                               <button
-                                onClick={() => advanceStatus(issue, 'prev')}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  advanceStatus(issue, 'prev');
+                                }}
                                 className="p-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
                                 title="Move status back"
                               >
@@ -311,7 +423,10 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                             )}
                             {col.id !== 'Done' && (
                               <button
-                                onClick={() => advanceStatus(issue, 'next')}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  advanceStatus(issue, 'next');
+                                }}
                                 className="p-1 rounded bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 hover:text-cyan-100 border border-cyan-800/50"
                                 title="Advance status forward"
                               >
@@ -340,6 +455,7 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                   <th className="py-3 px-4">Title</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Priority</th>
+                  <th className="py-3 px-4">Due Date</th>
                   <th className="py-3 px-4">Points</th>
                   <th className="py-3 px-4">Assignee</th>
                   <th className="py-3 px-4">Linked PR</th>
@@ -348,7 +464,11 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {filteredIssues.map((issue) => (
-                  <tr key={issue.id} className="hover:bg-slate-800/30 transition-colors">
+                  <tr 
+                    key={issue.id} 
+                    onClick={() => onSelectTask?.(issue)}
+                    className="hover:bg-slate-800/40 transition-colors cursor-pointer"
+                  >
                     <td className="py-3 px-4 font-bold text-cyan-400">{issue.key}</td>
                     <td className="py-3 px-4 max-w-xs font-sans-ui text-slate-200 font-medium">
                       <div className="flex items-center gap-2">
@@ -362,6 +482,7 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                       </span>
                     </td>
                     <td className="py-3 px-4">{getPriorityBadge(issue.priority)}</td>
+                    <td className="py-3 px-4 text-slate-400">{issue.dueDate || '-'}</td>
                     <td className="py-3 px-4 font-handjet text-base text-purple-300 font-bold">{issue.storyPoints} pts</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5">
@@ -376,7 +497,7 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                     </td>
                     <td className="py-3 px-4">
                       {issue.linkedPR ? (
-                        <span className="text-emerald-400 hover:underline cursor-pointer">
+                        <span className="text-emerald-400 hover:underline">
                           {issue.linkedPR}
                         </span>
                       ) : (
@@ -386,14 +507,20 @@ export const JiraKanbanBoard: React.FC<JiraKanbanBoardProps> = ({
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
-                          onClick={() => advanceStatus(issue, 'prev')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            advanceStatus(issue, 'prev');
+                          }}
                           disabled={issue.status === 'Backlog'}
                           className="p-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 disabled:opacity-30 border border-slate-800"
                         >
                           <ArrowLeft className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={() => advanceStatus(issue, 'next')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            advanceStatus(issue, 'next');
+                          }}
                           disabled={issue.status === 'Done'}
                           className="p-1 rounded bg-cyan-950 hover:bg-cyan-900 text-cyan-300 disabled:opacity-30 border border-cyan-800/50"
                         >
