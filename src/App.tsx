@@ -18,7 +18,9 @@ import {
   INITIAL_PULL_REQUESTS, 
   INITIAL_PIPELINES, 
   INITIAL_ACTIVITY_FEED, 
-  generateCommitHeatmap 
+  generateCommitHeatmap,
+  generatePersonalizedIssues,
+  generatePersonalizedPRs
 } from './data/mockData';
 import { Navbar, NavTab } from './components/Navbar';
 import { ProfileSection } from './components/ProfileSection';
@@ -532,9 +534,22 @@ export default function App() {
   const handleSignIn = async (user: Developer, token?: string) => {
     setCurrentUser(user);
     setIsAuthenticated(true);
+
+    // Initialize clean personalized Jira issues, PRs, and repos explicitly belonging to this real user
+    const personalizedIssues = generatePersonalizedIssues(user);
+    const personalizedPRs = generatePersonalizedPRs(user);
+    const personalizedRepos = generateSynthesizedRepos(user.githubHandle || user.handle || 'developer');
+
+    setJiraIssues(personalizedIssues);
+    setPullRequests(personalizedPRs);
+    setRealRepos(personalizedRepos);
+
     try {
       localStorage.setItem(STORAGE_KEYS.AUTH, 'true');
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      localStorage.setItem(STORAGE_KEYS.JIRA, JSON.stringify(personalizedIssues));
+      localStorage.setItem(STORAGE_KEYS.PRS, JSON.stringify(personalizedPRs));
+      localStorage.setItem(STORAGE_KEYS.REPOS, JSON.stringify(personalizedRepos));
     } catch (e) {
       console.warn('Failed to persist auth session', e);
     }
@@ -544,7 +559,7 @@ export default function App() {
       timestamp: 'Just now',
       type: 'pr_review',
       title: `@${user.handle} authenticated session`,
-      description: `Logged in as ${user.name} (${user.role}). Telemetry feed streaming.`,
+      description: `Logged in as ${user.name} (${user.role}). Real-time telemetry feed streaming.`,
       source: 'system',
       user: user,
     };
@@ -552,15 +567,20 @@ export default function App() {
 
     const ghHandle = user.githubHandle || user.githubUsername || user.handle;
     if (ghHandle) {
-      await handleSyncGitHubUser(ghHandle, token || user.githubToken);
+      await handleSyncGitHubUser(ghHandle, token || user.githubToken, user);
     }
   };
 
-  // Handle Sign Out
+  // Handle Sign Out - completely clears session and data keys for fresh next login
   const handleSignOut = () => {
     setIsAuthenticated(false);
     try {
       localStorage.removeItem(STORAGE_KEYS.AUTH);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      localStorage.removeItem(STORAGE_KEYS.JIRA);
+      localStorage.removeItem(STORAGE_KEYS.PRS);
+      localStorage.removeItem(STORAGE_KEYS.FEED);
+      localStorage.removeItem(STORAGE_KEYS.REPOS);
     } catch (e) {
       console.warn('Failed to clear auth session', e);
     }

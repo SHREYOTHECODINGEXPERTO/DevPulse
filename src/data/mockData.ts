@@ -525,7 +525,7 @@ export const INITIAL_ACTIVITY_FEED: ActivityEvent[] = [
 // Generates a realistic 52-week activity heatmap (365 days)
 export function generateCommitHeatmap(): CommitActivity[] {
   const result: CommitActivity[] = [];
-  const today = new Date('2026-08-22');
+  const today = new Date();
   
   for (let i = 364; i >= 0; i--) {
     const d = new Date(today);
@@ -568,6 +568,178 @@ export function generateCommitHeatmap(): CommitActivity[] {
   return result;
 }
 
+export function generatePersonalizedIssues(user: Developer): JiraIssue[] {
+  const userPrefix = (user.handle || 'DEV').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'PULSE';
+  return [
+    {
+      id: `jira-${user.handle}-101`,
+      key: `${userPrefix}-101`,
+      title: `Architect telemetry & distributed tracing pipeline for @${user.handle}`,
+      type: 'Story',
+      status: 'In Progress',
+      priority: 'High',
+      storyPoints: 8,
+      assignee: user,
+      reporter: user,
+      sprint: 'Active Sprint: Apex Velocity',
+      epic: 'Core Platform',
+      epicColor: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+      timeSpentHours: 12,
+      estimatedHours: 20,
+      tags: ['platform', 'architecture', 'telemetry'],
+      repo: `${user.handle}/telemetry-core`,
+      createdAt: new Date(Date.now() - 86400000 * 3).toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 86400000 * 4).toISOString().split('T')[0],
+      description: `Implement high-throughput metrics ingestion for user @${user.handle} with sub-millisecond round-trip response.`,
+    },
+    {
+      id: `jira-${user.handle}-102`,
+      key: `${userPrefix}-102`,
+      title: `Build OAuth2 & session persistence security layer`,
+      type: 'Task',
+      status: 'In Review',
+      priority: 'Critical',
+      storyPoints: 5,
+      assignee: user,
+      reporter: user,
+      sprint: 'Active Sprint: Apex Velocity',
+      epic: 'Auth & Security',
+      epicColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+      timeSpentHours: 6,
+      estimatedHours: 8,
+      tags: ['auth', 'security', 'session'],
+      repo: `${user.handle}/auth-gateway`,
+      createdAt: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
+      description: `Secure access tokens, cryptographic session validation, and database auth persistence for @${user.name}.`,
+    },
+    {
+      id: `jira-${user.handle}-103`,
+      key: `${userPrefix}-103`,
+      title: `Integrate AI-Assisted sprint backlog prioritization`,
+      type: 'Story',
+      status: 'Done',
+      priority: 'Medium',
+      storyPoints: 5,
+      assignee: user,
+      reporter: user,
+      sprint: 'Active Sprint: Apex Velocity',
+      epic: 'AI Intelligence',
+      epicColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+      timeSpentHours: 8,
+      estimatedHours: 8,
+      tags: ['ai', 'gemini', 'sprint'],
+      repo: `${user.handle}/ai-engine`,
+      createdAt: new Date(Date.now() - 86400000 * 5).toISOString().split('T')[0],
+      dueDate: new Date(Date.now() - 86400000 * 1).toISOString().split('T')[0],
+      description: `AI task generator and sprint productivity coach integrated with real-time hardware telemetry.`,
+    },
+    {
+      id: `jira-${user.handle}-104`,
+      key: `${userPrefix}-104`,
+      title: `Deploy full-stack web client to Vercel edge network`,
+      type: 'Task',
+      status: 'Todo',
+      priority: 'High',
+      storyPoints: 3,
+      assignee: user,
+      reporter: user,
+      sprint: 'Active Sprint: Apex Velocity',
+      epic: 'DevOps & CI/CD',
+      epicColor: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      timeSpentHours: 0,
+      estimatedHours: 4,
+      tags: ['vercel', 'deployment', 'ci-cd'],
+      repo: `${user.handle}/web-platform`,
+      createdAt: new Date(Date.now() - 86400000 * 1).toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 86400000 * 6).toISOString().split('T')[0],
+      description: `Configure serverless routes, environment secrets, and automated build pipelines.`,
+    },
+    {
+      id: `jira-${user.handle}-105`,
+      key: `${userPrefix}-105`,
+      title: `Refactor responsive HUD components with TailwindCSS v4`,
+      type: 'Refactor',
+      status: 'Backlog',
+      priority: 'Low',
+      storyPoints: 2,
+      assignee: user,
+      reporter: user,
+      sprint: 'Active Sprint: Apex Velocity',
+      epic: 'UI Design System',
+      epicColor: 'bg-sky-500/20 text-sky-400 border-sky-500/30',
+      timeSpentHours: 0,
+      estimatedHours: 6,
+      tags: ['ui', 'tailwind', 'glassmorphism'],
+      repo: `${user.handle}/design-system`,
+      createdAt: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 86400000 * 10).toISOString().split('T')[0],
+      description: `Clean glassmorphism styling, retro sounds, and gaming doodle overlay components.`,
+    },
+  ];
+}
+
+export function generatePersonalizedPRs(user: Developer): PullRequest[] {
+  return [
+    {
+      id: `pr-${user.handle}-1`,
+      number: 101,
+      title: `feat(core): live telemetry and sprint dashboard for @${user.handle}`,
+      repo: `${user.handle}/telemetry-core`,
+      branch: `feat/telemetry-hub`,
+      baseBranch: 'main',
+      author: user,
+      reviewers: [],
+      status: 'open',
+      checks: { passed: 14, total: 14, status: 'success' },
+      additions: 382,
+      deletions: 41,
+      changedFiles: 6,
+      commentsCount: 3,
+      jiraKey: `${(user.handle || 'DEV').slice(0, 4).toUpperCase()}-101`,
+      createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+      updatedAt: 'Just now',
+      reviewStatus: 'Approved',
+      diffSnippets: [
+        {
+          file: 'src/telemetry/hub.ts',
+          additions: 120,
+          deletions: 15,
+          diff: `@@ -1,10 +1,18 @@\n+// Real-time telemetry connection for ${user.name} (@${user.handle})\n+export function initUserTelemetry() {\n+  return startHardwareMetricsStream();\n+}`,
+        },
+      ],
+    },
+    {
+      id: `pr-${user.handle}-2`,
+      number: 102,
+      title: `fix(auth): secure session token validation & database persistence`,
+      repo: `${user.handle}/auth-gateway`,
+      branch: `fix/session-encryption`,
+      baseBranch: 'main',
+      author: user,
+      reviewers: [],
+      status: 'merged',
+      checks: { passed: 10, total: 10, status: 'success' },
+      additions: 194,
+      deletions: 28,
+      changedFiles: 4,
+      commentsCount: 1,
+      jiraKey: `${(user.handle || 'DEV').slice(0, 4).toUpperCase()}-102`,
+      createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+      updatedAt: '1 hour ago',
+      reviewStatus: 'Approved',
+      diffSnippets: [
+        {
+          file: 'src/auth/session.ts',
+          additions: 80,
+          deletions: 12,
+          diff: `@@ -1,8 +1,14 @@\n+// Session token encryption for @${user.handle}\n+export async function verifyToken(token: string) {\n+  return await decryptUserSession(token);\n+}`,
+        },
+      ],
+    },
+  ];
+}
+
 export const MOCK_REPOSITORIES = [
   'devpulse/telemetry-core',
   'devpulse/gateway-proxy',
@@ -584,3 +756,4 @@ export const MOCK_SPRINTS = [
   'Sprint 33: Quantum Release',
   'Backlog / Future Epics',
 ];
+

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Developer, MemeAvatar } from '../types';
-import { TEAM_MEMBERS, CURRENT_DEV } from '../data/mockData';
-import { GENZ_MEME_AVATARS, FUNNY_GENZ_DESIGNATIONS, FUNNY_STATUSES } from '../utils/memeAvatars';
+import { CURRENT_DEV } from '../data/mockData';
+import { GENZ_MEME_AVATARS } from '../utils/memeAvatars';
 import { soundFx } from '../utils/audio';
 import { fetchGitHubUser } from '../utils/github';
 import { triggerCodeCelebration } from '../utils/celebration';
@@ -12,53 +12,44 @@ import {
   Lock, 
   ShieldCheck, 
   Sparkles, 
-  UserCheck, 
   ArrowRight, 
   Check, 
   AlertCircle, 
   Loader2, 
-  Layers, 
   Zap, 
   UserPlus, 
-  Cpu, 
-  Globe, 
-  Code2, 
   KeyRound,
-  Radio
+  Radio,
+  User,
+  Mail,
+  Briefcase,
+  Users
 } from 'lucide-react';
 
 interface SignInPortalProps {
   onSignInSuccess: (user: Developer, token?: string) => Promise<void> | void;
 }
 
-const PRESET_GITHUB_USERS = [
-  { handle: 'shadcn', name: 'shadcn', role: 'Creator of shadcn/ui', avatar: 'https://github.com/shadcn.png' },
-  { handle: 'torvalds', name: 'Linus Torvalds', role: 'Creator of Linux & Git', avatar: 'https://github.com/torvalds.png' },
-  { handle: 'gaearon', name: 'Dan Abramov', role: 'React Core & Redux', avatar: 'https://github.com/gaearon.png' },
-  { handle: 'antfu', name: 'Anthony Fu', role: 'Vue / Vite / Nuxt Core', avatar: 'https://github.com/antfu.png' },
-  { handle: 'yyx990803', name: 'Evan You', role: 'Creator of Vue & Vite', avatar: 'https://github.com/yyx990803.png' },
-];
-
 export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) => {
-  const [authMethod, setAuthMethod] = useState<'github' | 'team' | 'custom'>('github');
+  const [authMethod, setAuthMethod] = useState<'github' | 'register'>('github');
   
   // GitHub Sign-In Form State
-  const [ghUsername, setGhUsername] = useState('shadcn');
+  const [ghUsername, setGhUsername] = useState('');
   const [ghToken, setGhToken] = useState('');
   const [isSyncingGithub, setIsSyncingGithub] = useState(false);
   const [ghError, setGhError] = useState<string | null>(null);
 
   // Custom Account Form State
-  const [customName, setCustomName] = useState('Alex Vance');
-  const [customHandle, setCustomHandle] = useState('alex_dev');
-  const [customEmail, setCustomEmail] = useState('alex@devpulse.io');
-  const [customRole, setCustomRole] = useState('Staff Platform & Systems Engineer');
-  const [customTeam, setCustomTeam] = useState('Core Platform & Architecture');
+  const [customName, setCustomName] = useState('');
+  const [customHandle, setCustomHandle] = useState('');
+  const [customEmail, setCustomEmail] = useState('');
+  const [customRole, setCustomRole] = useState('Full-Stack Software Engineer');
+  const [customTeam, setCustomTeam] = useState('Core Engineering Squad');
   const [customStatus, setCustomStatus] = useState<Developer['status']>('In the Zone');
-  const [customBio, setCustomBio] = useState('Architecting low-latency developer observability platforms.');
-  const [customAvatar, setCustomAvatar] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
-  const [selectedMeme, setSelectedMeme] = useState('gigachad_dev');
-  const [avatarMode, setAvatarMode] = useState<'memes' | 'url'>('memes');
+  const [customBio, setCustomBio] = useState('Building high-performance software and architecting systems.');
+  const [customGithubHandle, setCustomGithubHandle] = useState('');
+  const [customAvatar, setCustomAvatar] = useState('');
+  const [avatarMode, setAvatarMode] = useState<'github' | 'url' | 'memes'>('github');
   const [customAvatarUrlInput, setCustomAvatarUrlInput] = useState('');
 
   // Handle GitHub Sign-In
@@ -66,7 +57,7 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
     if (e) e.preventDefault();
     const handleToUse = (customPreset || ghUsername).trim().replace(/^@/, '');
     if (!handleToUse) {
-      setGhError('Please enter a GitHub username.');
+      setGhError('Please enter your GitHub username.');
       return;
     }
 
@@ -85,14 +76,26 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
         name: userProfile.name || userProfile.login,
         handle: userProfile.login,
         avatar: userProfile.avatar_url || `https://github.com/${userProfile.login}.png`,
-        bio: userProfile.bio || 'Open-source software developer & systems architect.',
-        team: userProfile.company ? userProfile.company.replace(/^@/, '') : 'Verified Contributor Team',
+        bio: userProfile.bio || `Software engineer & open-source contributor @${userProfile.login}`,
+        team: userProfile.company ? userProfile.company.replace(/^@/, '') : 'Core Engineering',
         role: 'Full-Stack Software Engineer',
         status: 'In the Zone',
         githubUsername: userProfile.login,
         githubHandle: userProfile.login,
         githubToken: ghToken.trim() || undefined,
       };
+
+      // Register / persist in backend database
+      devPulseApi.createUser({
+        name: newDevUser.name,
+        handle: newDevUser.handle,
+        email: `${newDevUser.handle}@devpulse.io`,
+        role: newDevUser.role,
+        team: newDevUser.team,
+        status: newDevUser.status,
+        bio: newDevUser.bio,
+        avatar: newDevUser.avatar,
+      }).catch((err) => console.warn('[Backend User Registration]', err));
 
       triggerCodeCelebration({ particleCount: 65, spread: 80 });
       await onSignInSuccess(newDevUser, ghToken.trim() || undefined);
@@ -105,30 +108,35 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
     }
   };
 
-  // Handle Team Member Quick Sign-In
-  const handleTeamMemberSelect = async (member: Developer) => {
-    triggerCodeCelebration({ particleCount: 50, spread: 60 });
-    await onSignInSuccess(member);
-  };
-
   // Handle Custom Profile Submit
   const handleCustomSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     triggerCodeCelebration({ particleCount: 60, spread: 75 });
 
-    const cleanHandle = customHandle.trim().replace(/^@/, '') || 'dev_user';
+    const cleanHandle = customHandle.trim().replace(/^@/, '') || 'developer';
+    const cleanGh = customGithubHandle.trim().replace(/^@/, '') || cleanHandle;
+
+    let finalAvatar = customAvatar;
+    if (!finalAvatar) {
+      if (avatarMode === 'github' && cleanGh) {
+        finalAvatar = `https://github.com/${cleanGh}.png`;
+      } else {
+        finalAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanHandle}`;
+      }
+    }
+
     const newDev: Developer = {
       ...CURRENT_DEV,
       id: `dev_${cleanHandle}_${Date.now()}`,
-      name: customName.trim() || 'Software Engineer',
+      name: customName.trim() || cleanHandle,
       handle: cleanHandle,
-      role: customRole.trim() || 'Full-Stack Developer',
+      role: customRole.trim() || 'Software Engineer',
       team: customTeam.trim() || 'Engineering Squad',
       status: customStatus,
-      bio: customBio.trim() || 'Building software and shipping features.',
-      avatar: customAvatar || `https://github.com/${cleanHandle}.png`,
-      githubUsername: cleanHandle,
-      githubHandle: cleanHandle,
+      bio: customBio.trim() || `Developer @${cleanHandle} building systems on DevPulse.`,
+      avatar: finalAvatar,
+      githubUsername: cleanGh,
+      githubHandle: cleanGh,
     };
 
     // Register & persist user in backend MongoDB / store
@@ -155,14 +163,14 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Main Authentication Container */}
-      <div className="relative w-full max-w-3xl z-10 space-y-6">
+      <div className="relative w-full max-w-2xl z-10 space-y-6">
         
         {/* Brand Banner */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs shadow-lg shadow-cyan-500/10">
-            <ShieldCheck className="w-4 h-4 text-cyan-400" />
-            <span className="font-bold tracking-widest uppercase">Secure Developer Portal</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <Radio className="w-4 h-4 text-cyan-400 animate-pulse" />
+            <span className="font-bold tracking-widest uppercase">Real-Time Developer Workspace</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
           </div>
 
           <div className="flex items-center justify-center gap-3 pt-1">
@@ -177,7 +185,7 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
           </div>
 
           <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
-            Please authenticate your developer account to access your live GitHub telemetry, Jira sprint board, commit heatmaps, and CI/CD pipelines.
+            Log in to stream your real-time telemetry, live GitHub repositories, sprint Kanban board, and AI developer intelligence.
           </p>
         </div>
 
@@ -186,7 +194,7 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
           <div className="flex items-center gap-2.5">
             <Lock className="w-4 h-4 text-amber-400 shrink-0" />
             <span>
-              <strong className="text-white">Data Protection Active:</strong> Live telemetry & workspace data are locked until identity is confirmed.
+              <strong className="text-white">Live Session Protected:</strong> Please sign in with your real account to view your telemetry and workspace.
             </span>
           </div>
           <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30">
@@ -197,7 +205,7 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
         {/* Auth Method Selector Tabs */}
         <div className="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 backdrop-blur-xl shadow-2xl space-y-6">
           
-          <div className="grid grid-cols-3 gap-2 p-1.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs">
+          <div className="grid grid-cols-2 gap-2 p-1.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs">
             <button
               type="button"
               onClick={() => {
@@ -211,39 +219,23 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
               }`}
             >
               <Github className="w-4 h-4 text-cyan-400" />
-              <span className="truncate">Sign in with GitHub</span>
+              <span>Connect GitHub Account</span>
             </button>
 
             <button
               type="button"
               onClick={() => {
                 soundFx.playClick(600, 0.03);
-                setAuthMethod('team');
+                setAuthMethod('register');
               }}
               className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg transition-all font-bold ${
-                authMethod === 'team'
-                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm shadow-purple-500/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-              }`}
-            >
-              <UserCheck className="w-4 h-4 text-purple-400" />
-              <span className="truncate">Team Quick-Login</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playClick(600, 0.03);
-                setAuthMethod('custom');
-              }}
-              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg transition-all font-bold ${
-                authMethod === 'custom'
+                authMethod === 'register'
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm shadow-emerald-500/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
               }`}
             >
               <UserPlus className="w-4 h-4 text-emerald-400" />
-              <span className="truncate">Custom Profile</span>
+              <span>Custom Developer Sign-In</span>
             </button>
           </div>
 
@@ -256,75 +248,55 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
                 <div className="flex items-center justify-between text-cyan-300 font-bold">
                   <span className="flex items-center gap-1.5">
                     <Zap className="w-4 h-4 text-cyan-400" />
-                    Live GitHub REST Data Ingestion
+                    Live GitHub REST Data Streaming
                   </span>
                   <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">
-                    5,000 REQ/HR SUPPORTS PAT
+                    REAL-TIME SYNC
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Connect your real GitHub account. Your public repositories, commit activity, language stats, and open PRs will automatically populate the dashboard.
+                  Enter your real GitHub username. Your real public repositories, commit history, language breakdown, and pull requests will stream directly into the dashboard.
                 </p>
               </div>
 
-              {/* Preset Quick Selectors */}
-              <div className="space-y-2">
-                <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-bold">
-                  Or One-Click Connect Open-Source Profiles:
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {PRESET_GITHUB_USERS.map((preset) => (
-                    <button
-                      key={preset.handle}
-                      type="button"
-                      onClick={() => handleGitHubSubmit(undefined, preset.handle)}
-                      disabled={isSyncingGithub}
-                      className="p-2 rounded-xl bg-white/5 hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-500/40 text-left transition-all flex items-center gap-2 group cursor-pointer"
-                    >
-                      <img
-                        src={preset.avatar}
-                        alt={preset.handle}
-                        className="w-7 h-7 rounded-full ring-1 ring-cyan-500/40 group-hover:scale-105 transition-transform"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="truncate">
-                        <div className="text-xs text-white font-bold group-hover:text-cyan-300 truncate">
-                          @{preset.handle}
-                        </div>
-                        <div className="text-[9px] text-slate-400 truncate">
-                          {preset.name}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* GitHub Credentials Form */}
-              <form onSubmit={(e) => handleGitHubSubmit(e)} className="space-y-4 pt-2">
+              <form onSubmit={(e) => handleGitHubSubmit(e)} className="space-y-4 pt-1">
                 <div>
                   <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1.5 font-bold">
-                    GitHub Username / Organization Handle
+                    Your GitHub Username
                   </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-2.5 text-xs text-cyan-400 font-bold">@</span>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3.5 text-xs text-cyan-400 font-bold">@</span>
                     <input
                       type="text"
+                      required
                       value={ghUsername}
                       onChange={(e) => {
                         setGhUsername(e.target.value);
                         setGhError(null);
                       }}
-                      placeholder="e.g. your_username or torvalds"
-                      className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                      placeholder="e.g. shreyakar or your_github_username"
+                      className="w-full pl-8 pr-12 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors font-mono"
                     />
+                    {ghUsername.trim() && (
+                      <div className="absolute right-3 w-6 h-6 rounded-full overflow-hidden border border-cyan-500/40">
+                        <img
+                          src={`https://github.com/${ghUsername.trim().replace(/^@/, '')}.png`}
+                          alt="preview"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div>
                   <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1.5 flex items-center justify-between">
-                    <span className="font-bold">Personal Access Token (PAT)</span>
-                    <span className="text-slate-500 text-[10px]">(Optional - unlocks private repos)</span>
+                    <span className="font-bold">GitHub Personal Access Token (PAT)</span>
+                    <span className="text-slate-500 text-[10px]">(Optional - 5,000 req/hr rate limit)</span>
                   </label>
                   <div className="relative">
                     <KeyRound className="w-3.5 h-3.5 text-slate-500 absolute left-3.5 top-3" />
@@ -333,7 +305,7 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
                       value={ghToken}
                       onChange={(e) => setGhToken(e.target.value)}
                       placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors font-mono"
                     />
                   </div>
                 </div>
@@ -353,12 +325,12 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
                   {isSyncingGithub ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Authenticating & Syncing GitHub...</span>
+                      <span>Fetching Real-Time GitHub Telemetry...</span>
                     </>
                   ) : (
                     <>
                       <Github className="w-4 h-4 fill-slate-950" />
-                      <span>Sign In & Ingest GitHub Telemetry</span>
+                      <span>Sign In & Stream Real Data</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -367,183 +339,118 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
             </div>
           )}
 
-          {/* METHOD 2: TEAM QUICK-LOGIN */}
-          {authMethod === 'team' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="text-xs text-slate-400">
-                Select an active DevPulse squad engineer to load their profile, active sprint tasks, and review queues:
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {TEAM_MEMBERS.map((member) => (
-                  <button
-                    key={member.id}
-                    type="button"
-                    onClick={() => handleTeamMemberSelect(member)}
-                    className="p-3.5 rounded-xl bg-slate-950/80 hover:bg-purple-500/10 border border-slate-800 hover:border-purple-500/40 text-left transition-all flex items-center gap-3.5 group cursor-pointer"
-                  >
-                    <div className="relative">
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        className="w-11 h-11 rounded-full object-cover ring-2 ring-purple-500/40 group-hover:scale-105 transition-transform"
-                        referrerPolicy="no-referrer"
-                      />
-                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
-                    </div>
-
-                    <div className="truncate flex-1">
-                      <div className="text-xs font-bold text-white group-hover:text-purple-300 truncate">
-                        {member.name}
-                      </div>
-                      <div className="text-[10px] text-cyan-400 truncate font-mono">
-                        @{member.handle}
-                      </div>
-                      <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                        {member.role}
-                      </div>
-                    </div>
-
-                    <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* METHOD 3: CUSTOM PROFILE REGISTRATION */}
-          {authMethod === 'custom' && (
+          {/* METHOD 2: CUSTOM DEVELOPER PROFILE REGISTRATION */}
+          {authMethod === 'register' && (
             <form onSubmit={handleCustomSubmit} className="space-y-4 animate-in fade-in duration-200 text-xs">
               
-              {/* Avatar Selector */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-                    Choose Developer Avatar
-                  </span>
-                  <div className="flex gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
-                    <button
-                      type="button"
-                      onClick={() => setAvatarMode('memes')}
-                      className={`px-2 py-0.5 rounded ${avatarMode === 'memes' ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-400'}`}
-                    >
-                      Meme Avatars
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAvatarMode('url')}
-                      className={`px-2 py-0.5 rounded ${avatarMode === 'url' ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-400'}`}
-                    >
-                      Custom URL
-                    </button>
-                  </div>
-                </div>
-
-                {avatarMode === 'memes' && (
-                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                    {GENZ_MEME_AVATARS.map((meme) => (
-                      <button
-                        key={meme.id}
-                        type="button"
-                        onClick={() => {
-                          soundFx.playPacmanDot();
-                          setSelectedMeme(meme.id);
-                          setCustomAvatar(meme.url);
-                        }}
-                        className={`relative rounded-xl overflow-hidden aspect-square border transition-all ${
-                          customAvatar === meme.url
-                            ? 'border-cyan-400 ring-2 ring-cyan-400/40 scale-105'
-                            : 'border-white/10 opacity-70 hover:opacity-100'
-                        }`}
-                        title={meme.name}
-                      >
-                        <img
-                          src={meme.url}
-                          alt={meme.name}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {avatarMode === 'url' && (
-                  <div className="flex gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1 font-bold">
+                    Full Name *
+                  </label>
+                  <div className="relative">
+                    <User className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
                     <input
-                      type="url"
-                      placeholder="Paste avatar URL (https://...)"
-                      value={customAvatarUrlInput}
-                      onChange={(e) => setCustomAvatarUrlInput(e.target.value)}
-                      className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white"
+                      type="text"
+                      required
+                      placeholder="e.g. Shreya Kar"
+                      value={customName}
+                      onChange={(e) => setCustomName(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (customAvatarUrlInput.trim()) {
-                          setCustomAvatar(customAvatarUrlInput.trim());
-                          soundFx.playClick(800, 0.05);
-                        }
-                      }}
-                      className="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs"
-                    >
-                      Apply
-                    </button>
                   </div>
-                )}
-              </div>
-
-              {/* Form Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1">
-                    Display Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={customName}
-                    onChange={(e) => setCustomName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white"
-                  />
                 </div>
 
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1">
-                    Developer Handle
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1 font-bold">
+                    Developer Handle *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={customHandle}
-                    onChange={(e) => setCustomHandle(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-cyan-300"
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-xs text-emerald-400 font-bold">@</span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="shreyakar"
+                      value={customHandle}
+                      onChange={(e) => setCustomHandle(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-emerald-300 font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1">
-                    Designation / Role
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1 font-bold">
+                    Email Address
                   </label>
-                  <input
-                    type="text"
-                    value={customRole}
-                    onChange={(e) => setCustomRole(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white"
-                  />
+                  <div className="relative">
+                    <Mail className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+                    <input
+                      type="email"
+                      placeholder="shreya@devpulse.io"
+                      value={customEmail}
+                      onChange={(e) => setCustomEmail(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1 font-bold">
+                    GitHub Handle (Optional Link)
+                  </label>
+                  <div className="relative">
+                    <Github className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="shreyakar"
+                      value={customGithubHandle}
+                      onChange={(e) => setCustomGithubHandle(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1 font-bold">
+                    Role / Title
+                  </label>
+                  <div className="relative">
+                    <Briefcase className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      value={customRole}
+                      onChange={(e) => setCustomRole(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1 font-bold">
                     Squad / Team
                   </label>
-                  <input
-                    type="text"
-                    value={customTeam}
-                    onChange={(e) => setCustomTeam(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white"
-                  />
+                  <div className="relative">
+                    <Users className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      value={customTeam}
+                      onChange={(e) => setCustomTeam(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
                 </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1 font-bold">
+                  Bio
+                </label>
+                <textarea
+                  rows={2}
+                  value={customBio}
+                  onChange={(e) => setCustomBio(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none"
+                />
               </div>
 
               <button
@@ -551,7 +458,7 @@ export const SignInPortal: React.FC<SignInPortalProps> = ({ onSignInSuccess }) =
                 className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
                 <Check className="w-4 h-4 stroke-[3]" />
-                <span>Create & Enter Dashboard</span>
+                <span>Create Account & Open Workspace</span>
               </button>
             </form>
           )}
